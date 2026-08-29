@@ -1,0 +1,98 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 520" width="720" height="520">
+  <!--
+    Plate-with-hole schematic for Module 0 / Lecture 3 / Lab 0.
+    Square plate (L x L) with centered circular hole of radius r.
+    BC: left edge u_x = 0; bottom edge u_y = 0; right edge uniform traction sigma_inf in +x.
+    Linear isotropic elastic, plane strain, E = 1, nu = 0.3.
+    Refine-4 expectations: hoop sigma_xx ~2.88 and plane-strain von Mises ~2.48.
+    Infinite-plate references: hoop ~3 and plane-strain von Mises ~2.67.
+  -->
+
+  <defs>
+    <!-- arrowhead for traction arrows -->
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5"
+            markerWidth="10" markerHeight="10" orient="auto-start-reverse">
+      <path d="M 0 0 L 10 5 L 0 10 z" fill="#222"/>
+    </marker>
+    <!-- hatched ground (for fixed BCs) -->
+    <pattern id="hatch" x="0" y="0" width="8" height="8" patternUnits="userSpaceOnUse"
+             patternTransform="rotate(45)">
+      <line x1="0" y1="0" x2="0" y2="8" stroke="#555" stroke-width="1.5"/>
+    </pattern>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="32" font-family="serif" font-size="22" text-anchor="middle" fill="#000">
+    Plate with circular hole, uniaxial tension (2D plane strain)
+  </text>
+  <text x="360" y="56" font-family="serif" font-size="14" text-anchor="middle" fill="#555">
+    E = 1, ν = 0.3 — refine 4: σxx ≈ 2.88, σvM ≈ 2.48 · refs ≈ 3 / ≈ 2.67
+  </text>
+
+  <!-- Plate body: 360x360 px representing L=1.0 -->
+  <!-- Plate goes from (180, 90) to (540, 450) -->
+  <rect x="180" y="90" width="360" height="360"
+        fill="#e8f0ff" stroke="#003a7a" stroke-width="2"/>
+
+  <!-- Hole: radius 36 px representing r=0.1 -->
+  <circle cx="360" cy="270" r="36" fill="#ffffff" stroke="#003a7a" stroke-width="2"/>
+
+  <!-- Hatched grounds on left edge (u_x = 0) -->
+  <rect x="160" y="90" width="20" height="360" fill="url(#hatch)" stroke="none"/>
+  <line x1="180" y1="90" x2="180" y2="450" stroke="#555" stroke-width="2"/>
+
+  <!-- Hatched ground on bottom edge (u_y = 0) -->
+  <rect x="180" y="450" width="360" height="20" fill="url(#hatch)" stroke="none"/>
+  <line x1="180" y1="450" x2="540" y2="450" stroke="#555" stroke-width="2"/>
+
+  <!-- Traction arrows on right edge (uniform sigma_inf in +x) -->
+  <g stroke="#b00" stroke-width="2.5" fill="none">
+    <line x1="540" y1="110" x2="600" y2="110" marker-end="url(#arrow)"/>
+    <line x1="540" y1="150" x2="600" y2="150" marker-end="url(#arrow)"/>
+    <line x1="540" y1="190" x2="600" y2="190" marker-end="url(#arrow)"/>
+    <line x1="540" y1="230" x2="600" y2="230" marker-end="url(#arrow)"/>
+    <line x1="540" y1="270" x2="600" y2="270" marker-end="url(#arrow)"/>
+    <line x1="540" y1="310" x2="600" y2="310" marker-end="url(#arrow)"/>
+    <line x1="540" y1="350" x2="600" y2="350" marker-end="url(#arrow)"/>
+    <line x1="540" y1="390" x2="600" y2="390" marker-end="url(#arrow)"/>
+    <line x1="540" y1="430" x2="600" y2="430" marker-end="url(#arrow)"/>
+  </g>
+  <text x="620" y="275" font-family="serif" font-size="20" font-style="italic" fill="#b00">σ∞</text>
+
+  <!-- Stress concentration callout -->
+  <circle cx="396" cy="270" r="5" fill="#b00" stroke="#b00"/>
+  <line x1="402" y1="266" x2="470" y2="220" stroke="#b00" stroke-width="1.5" stroke-dasharray="4 3"/>
+  <text x="475" y="218" font-family="serif" font-size="13" fill="#b00">track peak σxx (hoop)</text>
+  <text x="475" y="234" font-family="serif" font-size="13" fill="#b00">and peak σvM</text>
+
+  <!-- Dimension labels -->
+  <!-- L on bottom -->
+  <line x1="180" y1="490" x2="540" y2="490" stroke="#000" stroke-width="1"/>
+  <line x1="180" y1="485" x2="180" y2="495" stroke="#000" stroke-width="1"/>
+  <line x1="540" y1="485" x2="540" y2="495" stroke="#000" stroke-width="1"/>
+  <text x="360" y="508" font-family="serif" font-size="16" text-anchor="middle">L = 1.0</text>
+
+  <!-- L on left side -->
+  <line x1="140" y1="90" x2="140" y2="450" stroke="#000" stroke-width="1"/>
+  <line x1="135" y1="90" x2="145" y2="90" stroke="#000" stroke-width="1"/>
+  <line x1="135" y1="450" x2="145" y2="450" stroke="#000" stroke-width="1"/>
+  <text x="128" y="275" font-family="serif" font-size="16" text-anchor="end">L = 1.0</text>
+
+  <!-- Hole radius -->
+  <line x1="360" y1="270" x2="396" y2="270" stroke="#003a7a" stroke-width="1.5" stroke-dasharray="3 2"/>
+  <text x="375" y="262" font-family="serif" font-size="13" fill="#003a7a">r = 0.1</text>
+
+  <!-- BC labels -->
+  <text x="158" y="80" font-family="serif" font-size="14" fill="#555" text-anchor="middle">u_x = 0</text>
+  <text x="360" y="478" font-family="serif" font-size="14" fill="#555" text-anchor="middle">u_y = 0</text>
+
+  <!-- Coordinate axes -->
+  <g stroke="#000" stroke-width="1.5" fill="none">
+    <line x1="50" y1="470" x2="100" y2="470" marker-end="url(#arrow)"/>
+    <line x1="50" y1="470" x2="50" y2="420" marker-end="url(#arrow)"/>
+  </g>
+  <text x="105" y="475" font-family="serif" font-size="14" font-style="italic">x</text>
+  <text x="42" y="415" font-family="serif" font-size="14" font-style="italic">y</text>
+
+</svg>

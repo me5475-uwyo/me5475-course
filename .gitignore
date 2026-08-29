@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.pyc
+.venv/
+env/
+
+# MOOSE / simulation output — commit CSVs and plots you are asked for, not raw output
+*.e
+*.e-s*
+peacock_*
+*.i.out
+
+# Checkpoints and large artifacts
+checkpoints/*.pt
+*.npz
+!**/reference/*.npz
+
+# Editors / OS
+.DS_Store
+.vscode/
+.idea/
+~$*
