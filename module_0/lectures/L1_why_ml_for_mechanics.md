@@ -16,7 +16,7 @@ By the end of this lecture, students should be able to:
 1. Trace the historical arc of ML in computational solid mechanics from Ghaboussi 1991 through modern operator-learning approaches.
 2. Identify three concrete success stories of ML in solid mechanics — one in constitutive modeling, one in PDE solving, one in inverse identification.
 3. Apply the four-condition feasibility test to a new problem to judge whether ML is the right tool.
-4. Name the course toolchain (GitHub Classroom, Jupyter Book, PyTorch, DeepXDE, ARCC, MOOSE, AI coding agents) and explain what each is used for.
+4. Name the course toolchain (the course GitHub organization, Jupyter Book, PyTorch, DeepXDE, ARCC, MOOSE, AI coding agents) and explain what each is used for.
 
 ---
 
@@ -87,7 +87,7 @@ In-class discussion (3 min). Rate these three problems against the test:
 
 **Toolchain.** Briefly:
 
-- **GitHub Classroom** — all assignments submitted as pull requests on a per-student repo. We use issues, branches, and PR reviews intentionally — it is part of what makes the agentic workflow tractable.
+- **the course GitHub organization** — all assignments submitted as pull requests on a per-student repo. We use issues, branches, and PR reviews intentionally — it is part of what makes the agentic workflow tractable.
 - **Jupyter Book** — the course textbook is a live, versioned site rendered from this repository. Every lecture page is markdown; every example is runnable.
 - **Python 3.11+ and PyTorch 2.x** — main ML stack throughout the course.
 - **DeepXDE** — used specifically for the PINN labs in Module 3, because Min Lin's existing plate-with-hole notebook is the lab anchor and it was written in DeepXDE/TensorFlow.
@@ -109,7 +109,7 @@ In-class discussion (3 min). Rate these three problems against the test:
 ## Closing — start the four setup actions today (5 min)
 
 1. **ARCC account:** requested for you through the instructor-submitted Project Change Request. Watch for an email from ARCC, and tell the instructor if you registered late.
-2. **GitHub Classroom:** sign in with your UW email and join the course assignment from Canvas.
+2. **the course GitHub organization:** sign in with your UW email and join the course assignment from Canvas.
 3. **Local Python/PyTorch:** follow `module_0/setup.md` before Lecture 2.
 4. **GitHub Copilot:** verify student status at <https://education.github.com/pack> with your UW email. Verification takes a few days, so start today.
 
@@ -132,7 +132,7 @@ In-class discussion (3 min). Rate these three problems against the test:
 ## In-class deliverable
 
 - ARCC onboarding status checked; tell the instructor if you registered late.
-- GitHub Classroom account created (during class or before Lecture 2).
+- the course GitHub organization account created (during class or before Lecture 2).
 - GitHub Education student-status verification started with a UW email (today).
 - Python 3.11+ and PyTorch 2.x installed locally (before next class).
 
