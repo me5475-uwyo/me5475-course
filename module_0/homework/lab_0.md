@@ -4,7 +4,7 @@
 **Released:** Fri Aug 28, 2026 (before classes begin — you can start Task 2 after Lecture 2)
 **Due:** Fri Sep 11, 2026, 11:59 PM Mountain Time (the day L5 is taught)
 **Weight:** 30% / 9 ≈ 3.33% of total course grade (all nine labs are weighted equally)
-**Submission:** Pull request to your GitHub Classroom repo, on a branch named `lab_0`. Merge after instructor sign-off.
+**Submission:** Pull request to your private course repo (github.com/me5475-uwyo), on a branch named `lab_0`. Merge after instructor sign-off.
 
 ---
 
@@ -66,9 +66,25 @@ You already produced these in class. Copy them into `in_class/` and commit. Noth
 
 This task is the *pre-class homework for Lecture 3*. Complete it between L2 and L3.
 
+**You cannot be blocked by this task.** MOOSE is already installed and ready on ARCC — Task 4
+uses it, and so does every later lab that needs a simulation. A local build is a convenience, not a
+prerequisite. What this task is actually about is **using an AI coding agent on a genuinely hard,
+dependency-heavy install, and then verifying its claims instead of trusting them.** That skill is the
+point; MOOSE is just a demanding vehicle for it. **Both outcomes earn full credit:** a working install,
+or a documented failure with your logs and review notes. Attempt it seriously — the debugging is where
+the learning is — but do not lose a weekend to it.
+
 Open your AI coding agent (ChatGPT/Codex, Copilot, Claude Code, Cursor, or equivalent) and use the prompt in `module_0/examples/install_moose_prompt.md`. Run a review prompt independently after install reports success. Commit the install log and the von Mises screenshot from running `plate_with_hole.i` locally with `uniform_refine = 0`.
 
-If your install fails after two earnest attempts at home, document the failure in `prompts_l3_install.md`, bring your laptop to L3 anyway (we will troubleshoot in the first 5 minutes), and proceed to Task 4 on ARCC if you cannot resolve it.
+If your install fails after two earnest attempts at home, document the failure in
+`prompts_l3_install.md`, bring your laptop to L3 anyway (we will troubleshoot in the first 5 minutes),
+and run on ARCC instead.
+
+**Getting the screenshot without a local install.** Your Task 4 array job runs `uniform_refine = 0` as
+one of its five levels, which produces `plate_with_hole_refine_0_out.e` — the same field you would have
+produced locally. Download it (portal → **Files** → **Home Directory** → Download, or `scp`) and open it
+in **ParaView**, which has native Windows, macOS, and Linux builds. So the screenshot is reachable on any
+operating system. *(MOOSE itself has no native Windows build — a local install on Windows needs WSL.)*
 
 > **If your ARCC account is not active yet:** tell me. Tasks 3 and 4 need cluster access,
 > and no deadline or grade penalty attaches to work you could not do for lack of a working
