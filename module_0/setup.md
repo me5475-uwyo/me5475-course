@@ -5,7 +5,7 @@ Start these steps in Lecture 1. Complete the local Python/PyTorch setup before L
 ## 1. Course accounts
 
 - **ARCC:** your account has been requested through an instructor-submitted Project Change Request. Watch for an email from ARCC. Tell the instructor promptly if you registered late so your username can be added.
-- **GitHub Classroom:** sign in at <https://classroom.github.com/> with your UW email, then use the course invitation posted on Canvas.
+- **the course GitHub organization:** submit your GitHub username through the short "Your GitHub username" item on Canvas (due Wed Sep 2). The instructor then creates your private repository `me5475-<username>` in the course organization <https://github.com/me5475-uwyo> and GitHub emails you an invitation — accept it, then clone your repo. All labs are submitted as pull requests there.
 - **GitHub Copilot:** verify student status at <https://education.github.com/pack> with your UW email. Approval can take a few days, so start today. Copilot is free after GitHub approves the student status.
 
 ## 2. Local Python 3.11 and PyTorch 2.x
@@ -42,6 +42,12 @@ moose-opt -i plate_with_hole.i
 ```
 
 Open `plate_with_hole_out.e` in ParaView, color by `vonmises_stress`, and save the screenshot required by Lab 0. If the install still fails after two earnest attempts, document the failure and use the ARCC fallback described in `module_0/homework/lab_0.md`.
+
+**On Windows:** MOOSE has no native Windows build, so a local install needs WSL (see the "Connecting to
+ARCC" page on Canvas). Visualization is a different matter — **ParaView has a native Windows build** and
+reads `.e` files directly. If you take the ARCC fallback for the install, you can still produce the Lab 0
+screenshot: run the simulation on the cluster, download `plate_with_hole_out.e` (portal → Files → Home
+Directory → Download, or `scp`), and open it in ParaView on your own machine.
 
 ## 4. ARCC values to keep
 
