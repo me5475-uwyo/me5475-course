@@ -76,7 +76,21 @@ the learning is — but do not lose a weekend to it.
 
 Open your AI coding agent (ChatGPT/Codex, Copilot, Claude Code, Cursor, or equivalent) and use the prompt in `module_0/examples/install_moose_prompt.md`. Run a review prompt independently after install reports success. Commit the install log and the von Mises screenshot from running `plate_with_hole.i` locally with `uniform_refine = 0`.
 
-If your install fails after two earnest attempts at home, document the failure in
+**Which operating system you have changes the task, not the credit.**
+
+- **macOS or Linux** — attempt the install as written.
+- **Windows with WSL** — attempt it inside WSL, exactly as you would on Linux.
+- **Windows without WSL** — do **not** install WSL just for this. MOOSE has no native Windows build,
+  so your version of the exercise is to establish that *and prove it*: ask your lead agent whether
+  MOOSE can be built natively on Windows and how it knows, then open a fresh session and have a
+  review agent check the claim independently. Log both prompts and both answers. An agent that
+  asserts a confident wrong answer here — and they sometimes do — is exactly the failure mode
+  Lecture 2 is about, and catching it is worth as much as a successful build.
+
+The struggle is the assignment. Wrestling with a dependency-heavy build, reading an error you have
+never seen, and deciding whether the agent's explanation is true — that is the skill this task is
+training, and it transfers to every install you will ever do. What is *not* useful is grinding past
+the point of learning: if the install fails after two earnest attempts, document the failure in
 `prompts_l3_install.md`, bring your laptop to L3 anyway (we will troubleshoot in the first 5 minutes),
 and run on ARCC instead.
 
