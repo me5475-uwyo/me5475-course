@@ -107,3 +107,27 @@ Used throughout the course as a *reference* (not a week-by-week assigned reading
 No chapters are assigned to a specific lecture. Students are expected to consult the relevant section when a concept appears in lecture and they want a deeper treatment than the course notes provide. Alternatives if you already own a different graduate FEA text (Hughes; Reddy; Bathe; Borja for plasticity): use what you have — the topics overlap substantially.
 
 Module 0 itself does not require this reference. The first place it becomes useful is Module 1 (tensors, Voigt notation) and Module 4 (plasticity).
+
+## Module 0 supplementary readings (added 2026-09-01)
+
+Written to support Lecture 2 (Wed Sep 2) and Lecture 3 (Fri Sep 4). A and B are the two worked
+examples demonstrated live in L2; C is the FEA refresher promised in class for students who want to
+review finite elements or have not taken an FEA course; D is a complete MOOSE + ARCC workflow.
+
+| Reading | Read before | What it covers |
+|---|---|---|
+| [The weak form of linear elastostatics](weak_form_derivation.md) | L2, Wed Sep 2 | Strong → weak form, test functions, natural vs essential BCs, symmetry of a(u,v). The theory half of the L2 live demo. |
+| [An MLP that fits sin(πx)](mlp_sine_walkthrough.md) | L2, Wed Sep 2 | PyTorch training loop end to end, tensor shapes, the silent broadcasting bug measured. The code half of the L2 live demo. |
+| [Finite elements in 1-D: a primer](fe_1d_primer.md) | L3, Fri Sep 4 (optional but recommended) | The whole FE arc in the simplest setting: weak form, shape functions, element stiffness, assembly, BCs, solve, post-process, convergence. **Start here if you have not taken an FEA course.** |
+| [A 2-D cantilever in MOOSE on ARCC](moose_cantilever_arcc.md) | L3, Fri Sep 4 | A complete run: MOOSE input file block by block, the SLURM submission script directive by directive, contour plots, and validation against beam theory. |
+
+Runnable companions live in `module_0/examples/`: `mlp_sine_reference.py`, `fe1d_reference.py`,
+`cantilever_beam.i`, `run_cantilever.sbatch`, `plot_beam_results.py`. Measured results that all four
+readings cite: `module_0/readings/measured_results.md`.
+
+The FEA primer also has a **printable PDF** (`module_0/readings/fe_1d_primer.pdf`, 5 pp, linked from its
+Canvas page) for students who want to work through it with a pencil. The Canvas page remains the
+accessible version; the PDF is generated from the same Markdown by `team/tools/md_to_pdf.py`, so the
+two cannot drift.
+
+Naming and layout convention for all readings: `module_0/readings/README.md`.
