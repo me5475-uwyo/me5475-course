@@ -121,6 +121,8 @@ review finite elements or have not taken an FEA course; D is a complete MOOSE + 
 | [Finite elements in 1-D: a primer](fe_1d_primer.md) | L3, Fri Sep 4 (optional but recommended) | The whole FE arc in the simplest setting: weak form, shape functions, element stiffness, assembly, BCs, solve, post-process, convergence. **Start here if you have not taken an FEA course.** |
 | [A 2-D cantilever in MOOSE on ARCC](moose_cantilever_arcc.md) | L3, Fri Sep 4 | A complete run: MOOSE input file block by block, the SLURM submission script directive by directive, contour plots, and validation against beam theory. |
 
+| [Submitting your work with Git and GitHub](git_submission_guide.md) | before your first submission | Step-by-step from accepting the repository invitation to opening the pull request, including authentication setup. Referenced by every lab handout. |
+
 Runnable companions live in `module_0/examples/`: `mlp_sine_reference.py`, `fe1d_reference.py`,
 `cantilever_beam.i`, `run_cantilever.sbatch`, `plot_beam_results.py`. Measured results that all four
 readings cite: `module_0/readings/measured_results.md`.
