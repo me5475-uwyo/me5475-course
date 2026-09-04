@@ -183,3 +183,28 @@ Hang on to your `convergence.png` and your refined `plate_with_hole.i` files. Yo
 - **Possibly your final project.** Several past students extend this same geometry into a parameter-identification (inverse) problem: given a coarse displacement field, what (E, ν) and what stress concentration produced it?
 
 The point: Module 0 is not throwaway scaffolding. The artifact you produce today is your baseline reference for three later modules.
+
+---
+
+## How to submit
+
+This lab is submitted as a **pull request from a branch named `lab_0`**, with your files under
+`labs/lab_0/<your-github-username>/`. If you have not used Git before, follow
+`module_0/readings/git_submission_guide.md` — it walks the whole process from accepting the
+repository invitation through opening the pull request, including the authentication setup that
+trips up most newcomers.
+
+The short version, once you have done it once:
+
+```
+git checkout main && git pull
+git checkout -b lab_0
+# ... work in labs/lab_0/<your-github-username>/ ...
+git add labs/lab_0/<your-github-username>
+git commit -m "Lab 0: what you did"
+git push -u origin lab_0
+# then open the pull request on github.com — that PR is the submission
+```
+
+Open the pull request early. Later pushes to the same branch update it automatically, so there is no
+reason to wait until you are finished.
