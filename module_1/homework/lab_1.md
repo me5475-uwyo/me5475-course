@@ -153,3 +153,28 @@ The pieces compound. Keep your code clean.
 ## Academic integrity reminder
 
 Agents are encouraged. Logged prompts in each subdirectory are mandatory. The numerical results you submit must be your own — copying a classmate's CSV or checkpoint is plagiarism. Discussing strategy with classmates is fine and encouraged.
+
+---
+
+## How to submit
+
+This lab is submitted as a **pull request from a branch named `lab_1`**, with your files under
+`labs/lab_1/<your-github-username>/`. If you have not used Git before, follow
+`module_0/readings/git_submission_guide.md` — it walks the whole process from accepting the
+repository invitation through opening the pull request, including the authentication setup that
+trips up most newcomers.
+
+The short version, once you have done it once:
+
+```
+git checkout main && git pull
+git checkout -b lab_1
+# ... work in labs/lab_1/<your-github-username>/ ...
+git add labs/lab_1/<your-github-username>
+git commit -m "Lab 1: what you did"
+git push -u origin lab_1
+# then open the pull request on github.com — that PR is the submission
+```
+
+Open the pull request early. Later pushes to the same branch update it automatically, so there is no
+reason to wait until you are finished.
