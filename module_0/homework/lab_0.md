@@ -2,7 +2,7 @@
 
 **Module:** 0
 **Released:** Fri Aug 28, 2026 (before classes begin — you can start Task 2 after Lecture 2)
-**Due:** Fri Sep 11, 2026, 11:59 PM Mountain Time (the day L5 is taught)
+**Due:** Mon Sep 14, 2026, 11:59 PM Mountain Time  *(moved back from Fri Sep 11 — Canvas is authoritative for dates)*
 **Weight:** 30% / 9 ≈ 3.33% of total course grade (all nine labs are weighted equally)
 **Submission:** Pull request to your private course repo (github.com/me5475-uwyo), on a branch named `lab_0`. Merge after instructor sign-off.
 
