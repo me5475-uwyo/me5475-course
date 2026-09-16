@@ -31,6 +31,8 @@ import argparse
 import json
 from pathlib import Path
 
+import matplotlib
+matplotlib.use("Agg")          # save-only: no display needed, so this works over SSH
 import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
