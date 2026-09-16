@@ -20,6 +20,118 @@ This is the simplest possible constitutive-modeling-via-ML problem. The analytic
 
 ---
 
+## Before you start — three packages you do not have yet
+
+`module_0/setup.md` installed **PyTorch only**. This lab needs three more, and without them you will
+hit `ModuleNotFoundError` on a *required deliverable* — `sine_mlp.png` cannot be produced without
+matplotlib, and the constitutive trainer cannot read its data without pandas.
+
+| package | needed by |
+|---|---|
+| `matplotlib` | `sine_mlp.py` → the required `sine_mlp.png`; `mlp_constitutive.py` |
+| `numpy` | `mlp_constitutive.py`, `generate_data.py` |
+| `pandas` | `mlp_constitutive.py`, `generate_data.py` — reads the stress–strain CSV |
+
+Install them once, into the same environment you made in M0:
+
+```
+conda activate me5475
+python -m pip install matplotlib numpy pandas
+```
+
+**Verify before going further.** This must print four version numbers, not a traceback:
+
+```
+python -c "import torch, numpy, matplotlib, pandas; \
+print(torch.__version__, numpy.__version__, matplotlib.__version__, pandas.__version__)"
+```
+
+If it raises `ModuleNotFoundError`, you are almost certainly in the wrong environment — check that
+your prompt shows `(me5475)` and re-run `conda activate me5475`.
+
+**On ARCC**, you do not install anything — the course environment is already built. Log in, then run
+this as your second command, every session:
+
+```
+source /project/me5475/setup5475.sh
+```
+
+That loads the right miniconda module, activates `/project/me5475/envs/ml4sm`, sets your SLURM
+account, and then prints what it actually got:
+
+```
+ME 5475 environment ready
+  python   3.11.x  (/project/me5475/envs/ml4sm)
+  packages torch 2.x, numpy 2.x, matplotlib 3.x, pandas 2.x
+```
+
+**If that summary shows a `MISSING` line, stop and tell the instructor** — do *not* `pip install`
+into the shared environment. A package missing there is missing for all of us, and it needs fixing
+centrally.
+
+Note it must be `source`d, not executed. `conda activate` only changes the shell it runs in, so
+running the file as `./setup5475.sh` creates a throwaway shell and leaves your prompt untouched. If
+you would rather type one word, add the shorthand once:
+
+```
+echo 'setup5475() { source /project/me5475/setup5475.sh; }' >> ~/.bashrc
+```
+
+---
+
+## Getting your repository onto ARCC
+
+Task 3 runs on ARCC, so your code has to be there. **Do this before class, not during it** — it
+involves a browser and it is the step most likely to cost you twenty minutes.
+
+Your repo is **private**, so ARCC needs permission to read it. The cleanest way is an SSH key that
+lives on ARCC. Generate it *on ARCC*, not on your laptop — a key should never be copied between
+machines.
+
+**One time only:**
+
+```
+# 1. logged in to ARCC
+ssh-keygen -t ed25519 -C "me5475-arcc"      # press Enter at each prompt; a passphrase is optional
+cat ~/.ssh/id_ed25519.pub                   # copy the single line this prints
+```
+
+```
+# 2. in a browser: github.com -> Settings -> SSH and GPG keys -> New SSH key
+#    Title: "ARCC MedicineBow"      Key: paste the line
+```
+
+```
+# 3. back on ARCC, confirm GitHub knows you
+ssh -T git@github.com
+#    expect: Hi <your-username>! You've successfully authenticated...
+```
+
+```
+# 4. clone, once
+cd ~
+git clone git@github.com:me5475-uwyo/me5475-<your-github-username>.git
+```
+
+**Every session after that**, to pick up new course material:
+
+```
+cd ~/me5475-<your-github-username>
+git pull
+```
+
+That is the same command you use on your laptop, against the same repository — which is the point.
+There is then exactly one version of any file, and if yours looks different from someone else's,
+`git log -1 --oneline` tells you why in five seconds.
+
+**Never** paste a *private* key (`id_ed25519`, no `.pub`) or a GitHub token anywhere — not into a
+chat, an email, an AI agent, or the repo. Only the `.pub` line goes to GitHub.
+
+*If `ssh -T git@github.com` hangs or is refused*, ARCC may block outbound SSH. Tell the instructor
+rather than working around it; there is an HTTPS path, but it should be set up deliberately.
+
+---
+
 ## Deliverables
 
 ```
