@@ -17,6 +17,8 @@ Usage
 
 from __future__ import annotations
 
+import matplotlib
+matplotlib.use("Agg")          # save-only: no display needed, so this works over SSH
 import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
