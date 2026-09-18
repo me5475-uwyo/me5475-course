@@ -32,7 +32,8 @@ def main() -> None:
     x = torch.linspace(-1.0, 1.0, N).unsqueeze(1)
     y = torch.sin(torch.pi * x)
 
-    # 2. Define a 4-layer MLP with width 32 and tanh activations.
+    # 2. Define an MLP: 3 hidden layers of width 32, tanh between them,
+    #    and a bare Linear output -- no activation on the output.
     model = nn.Sequential(
         nn.Linear(1, 32), nn.Tanh(),
         nn.Linear(32, 32), nn.Tanh(),
