@@ -28,7 +28,7 @@
 #SBATCH --output=mlp-%j.out
 #SBATCH --error=mlp-%j.err
 #SBATCH --mail-type=END,FAIL
-#SBATCH --mail-user=xiang.zhang@uwyo.edu
+#SBATCH --mail-user=<your-email>
 
 set -euo pipefail
 
@@ -41,9 +41,18 @@ source /apps/u/opt/linux/miniconda3/24.3.0/etc/profile.d/conda.sh
 conda activate /project/me5475/envs/ml4sm
 
 # -----------------------------------------------------------------------------
+# Keep the math libraries inside the cores SLURM actually gave us. Left unset,
+# torch sees all 96 cores on the node and spawns that many threads inside a
+# 4-core cgroup -- the threads then fight for the same four cores. This is the
+# 6:45-vs-22s slowdown measured in the 2026-08-18 ARCC smoke test.
+# -----------------------------------------------------------------------------
+export OMP_NUM_THREADS=${SLURM_CPUS_PER_TASK:-1}
+export MKL_NUM_THREADS=${SLURM_CPUS_PER_TASK:-1}
+
+# -----------------------------------------------------------------------------
 # Move into the submit directory (sbatch starts you there, but be explicit).
 # -----------------------------------------------------------------------------
-cd $SLURM_SUBMIT_DIR
+cd "$SLURM_SUBMIT_DIR"
 
 echo "----- Job start: $(date) -----"
 echo "Running on: $(hostname)"
@@ -55,7 +64,15 @@ echo
 # -----------------------------------------------------------------------------
 # Run the training.
 # -----------------------------------------------------------------------------
-srun python mlp_constitutive.py \
+
+# NOTE (2026-09-18, verified on MedicineBow): call the interpreter by its full
+# path, not bare `python`. If you `source setup5475.sh` and THEN `sbatch`, the
+# job inherits CONDA_PREFIX from your shell, `module purge` strips conda off
+# PATH, and the `conda activate` below then no-ops because conda believes the
+# env is already active -- so bare `python` resolves to the base interpreter and
+# the job dies with ModuleNotFoundError. Reproduced as jobs 17587307 (clean
+# shell, PASS) vs 17587308 (after sourcing, FAIL); this form passes from both.
+srun "$CONDA_PREFIX/bin/python" mlp_constitutive.py \
     --data data/single_element.csv \
     --epochs 5000 \
     --hidden 32 \
