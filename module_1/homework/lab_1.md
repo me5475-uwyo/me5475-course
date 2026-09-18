@@ -62,7 +62,7 @@ account, and then prints what it actually got:
 ```
 ME 5475 environment ready
   python   3.11.x  (/project/me5475/envs/ml4sm)
-  packages torch 2.x, numpy 2.x, matplotlib 3.x, pandas 2.x
+  packages torch 2.5.1+cu121, numpy 2.4.4, matplotlib 3.10.9, pandas 3.0.3
 ```
 
 **If that summary shows a `MISSING` line, stop and tell the instructor** — do *not* `pip install`
