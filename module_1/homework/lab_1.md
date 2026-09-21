@@ -178,6 +178,30 @@ You completed this in Lecture 8: train an MLP locally on y = sin(πx), then subm
 
 Generate ~200 stress-strain pairs on a single 2-D unit element using `single_element_loadsweep.i` (provided) and the driver `generate_data.py` (provided). Either run locally on your laptop (5 min total) or on an ARCC login node (do not submit hundreds of tiny MOOSE jobs to the cluster — each is < 1 second, batch overhead dominates).
 
+**Running it on ARCC — the exact recipe** (verified on `mblog1`, 2026-09-21):
+
+```bash
+source /project/me5475/setup5475.sh      # gives you python + numpy + pandas
+module load gcc/14.2.0                   # REQUIRED -- see the note below
+cd <your Lab 1 folder>
+python generate_data.py --n 200 --out data/single_element.csv \
+  --moose-exe /project/me5475/software/rom_opt_arcc/rom_opt-opt
+```
+
+**About 3 minutes for 200 runs** (measured: 20 runs in 19 s).
+
+Two things that will otherwise stop you dead:
+
+- **`moose-opt` is not a command on MedicineBow.** The driver's default `--moose-exe moose-opt`
+  does not exist here. Pass the full path above.
+- **`module load gcc/14.2.0` is not optional.** `setup5475.sh` puts conda's `libstdc++` first on
+  the library path, and it is older than the one MOOSE was built against. Without the module load
+  you get `GLIBCXX_3.4.31 not found` and `MOOSE returned non-zero exit code`. **Nothing is wrong
+  with your input file** — it is a library-ordering problem, and that one line fixes it.
+
+You will see yellow **deprecation warnings** about `Modules/TensorMechanics/Master` on every run.
+They are harmless; the course inputs predate a MOOSE syntax change.
+
 The strain components are sampled uniformly in [-0.005, +0.005]. This is well within the small-strain regime where linear elasticity is exactly valid, so the labels are noise-free.
 
 Use lead+review agents on at least one of:
