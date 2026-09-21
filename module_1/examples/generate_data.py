@@ -7,8 +7,22 @@ running single_element_loadsweep.i hundreds of times with random strain inputs.
 
 Usage
 -----
+    # 1 -- laptop, with a MOOSE that provides solid mechanics on your PATH
     python generate_data.py --n 200 --out data/single_element.csv
-    python generate_data.py --n 200 --out data/single_element.csv --moose-exe moose-opt
+
+    # 2 -- ARCC: 'moose-opt' does NOT exist there, so name the binary explicitly.
+    #      Also needs, in the same shell, BEFORE this command:
+    #          source /project/me5475/setup5475.sh
+    #          module load gcc/14.2.0
+    python generate_data.py --n 200 --out data/single_element.csv \
+        --moose-exe /project/me5475/software/rom_opt_arcc/rom_opt-opt
+
+    # 3 -- a smaller run first, to check the chain works end to end (~1 s/run)
+    python generate_data.py --n 5 --out data/five.csv \
+        --moose-exe /project/me5475/software/rom_opt_arcc/rom_opt-opt
+
+    # 4 -- widen the sampling range. NOTE: the material is linear elastic, so this
+    #      rescales the data rather than making it richer.
     python generate_data.py --n 200 --out data/single_element.csv --max-strain 0.01
 
 Outputs
