@@ -6,9 +6,11 @@ together, and you leave with it working.*
 **Verified on MedicineBow (`mblog1`) on 2026-09-21.** Every command and every number below was run.
 Measurements are recorded in `module_2/readings/measured_results.md`.
 
-**Lab 1 is due Wed Sep 23.** The slides that would have been today's lecture are posted separately
-as reading — they cover loss functions, AdamW, gradient clipping and the learning-rate range test,
-and you need them for Lab 2.
+**Lab 1 is due Wed Sep 23.** The point of today is to make sure **everyone has a working
+end-to-end workflow** — data generation, training, and prediction — and has built a complete MLP
+through the in-class demo. Alongside it we provide a set of **reading slides** that expand on loss
+functions, AdamW, gradient clipping and the learning-rate range test. That material is not optional:
+**Lab 2 is already out and is due Wed Sep 30**, and it is built on it.
 
 ---
 
