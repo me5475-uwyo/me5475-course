@@ -1,7 +1,7 @@
 # Lecture 9 — Lab 1, end to end, on ARCC
 
-*Mon Sep 21, 2026. This class is a working session: no new slides. We run the whole Lab 1 chain
-together, and you leave with it working.*
+*Mon Sep 21, 2026. This class is a working session, with reading slides. We run the whole Lab 1
+chain together, and you leave with it working.*
 
 **Verified on MedicineBow (`mblog1`) on 2026-09-21.** Every command and every number below was run.
 Measurements are recorded in `module_2/readings/measured_results.md`.
