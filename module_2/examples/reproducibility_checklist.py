@@ -81,10 +81,10 @@ def main() -> None:
 
     # Test 3: CUDA determinism check (only if GPU available).
     if torch.cuda.is_available():
-        print("3. CUDA available; running GPU determinism check ...")
-        # Move model to GPU implicitly via .cuda() in a forked version of tiny_train_run.
-        # For brevity, just print that the user should re-test on GPU.
-        print("   (manual check: set torch.use_deterministic_algorithms(True) and re-run on GPU)")
+        # NOT an automatic test: this script only checks CPU seeding. On a GPU,
+        # determinism has to be verified by hand -- say so rather than imply a check ran.
+        print("3. CUDA determinism: NOT TESTED automatically (GPU present) -- manual check:")
+        print("   set torch.use_deterministic_algorithms(True) and re-run your training on GPU")
     else:
         print("3. CUDA determinism: SKIPPED (no GPU detected)")
 
