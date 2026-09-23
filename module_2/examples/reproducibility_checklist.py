@@ -10,11 +10,13 @@ Usage
 -----
     python reproducibility_checklist.py
 
-Prints PASS / FAIL on:
+Automatically checks, on CPU (PASS / FAIL):
   1. Two runs with the same seed produce identical final weights.
   2. Two runs with different seeds produce DIFFERENT weights.
-  3. CUDA determinism (if GPU available) does not change results.
-  4. PyTorch and NumPy seeds are set BEFORE any model or data is created.
+Does NOT check automatically:
+  3. GPU determinism -- on a GPU it prints a manual instruction only.
+  4. Seed placement, data loading, checkpoints, environment and git SHA -- these
+     are printed as a MANUAL checklist for you to apply to your own scripts.
 """
 
 from __future__ import annotations
