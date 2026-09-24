@@ -23,7 +23,6 @@ The syllabus, deadlines, and announcements live on Canvas — Canvas is authorit
 ```
 module_<n>/
 ├── README.md      what the module covers
-├── lectures/      the full lecture notes (more detail than the slides)
 ├── examples/      runnable code and MOOSE input files the lectures use
 ├── readings/      references and cheat sheets
 └── homework/      the lab handout and starter prompts
