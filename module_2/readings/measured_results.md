@@ -92,3 +92,42 @@ Date: 2026-09-21 · Environments: **ARCC** + **MOOSE**, with `module load gcc/14
 Requires `module load gcc/14.2.0` after `source setup5475.sh`: conda's `libstdc++` is older than the
 one MOOSE was built against, and without it the driver fails with `GLIBCXX_3.4.31 not found`.
 MOOSE alone works and python alone works; only the combination fails.
+
+## 6 · Lab 2 sweep on ARCC — 50 trials, ten workers, one shared split
+
+Run: `DATA=…/single_element_analytic.csv sbatch optuna_sweep.sbatch` (10 workers × 5 trials,
+`--max-epochs 2000`, TPE + `MedianPruner(n_startup_trials=5, n_warmup_steps=100)`, reports every 10
+epochs, SQLite with a 60 s lock timeout, **`--split-seed 42` for every worker**)
+Date: 2026-09-25 · Environment: **ARCC** (`ml4sm`, optuna 4.8.0), partition `mb`, job 18801657
+Data: the analytic Lab 1 dataset (`generate_data_analytic.py`, 200 points, noise-free).
+Evidence: `team/reviews/2026-09-25_L11_evidence/` (all 50 trials as CSV, `study_summary.txt`,
+`sacct_18801657.txt`).
+
+**All ten worker logs show the same split fingerprint** (`d45e25d089`), so every trial was trained
+and scored on the same rows. **All 50 trials ran within 2 min 38 s** (first trial start 09:17:13, last
+finish 09:19:51) once the workers started. **27 completed, 23 pruned, 0 failed**; 21 of the 23 were
+pruned at epoch 100, the first check-in the warm-up allows.
+
+| rank | trial | val MSE (standardised) | lr | width | n_layers | weight_decay | batch |
+|---|---|---|---|---|---|---|---|
+| 1 | 33 | 5.09e-5 | 1.02e-2 | 32 | 2 | 2.7e-3 | 16 |
+| 2 | 34 | 5.82e-5 | 1.01e-2 | 32 | 2 | 2.0e-3 | 16 |
+| 3 | 16 | 7.01e-5 | 2.20e-3 | 128 | 3 | 8.1e-3 | 16 |
+| worst completed | 1 | 4.66e-2 | 2.89e-5 | 16 | 6 | 2.1e-4 | 64 |
+
+The five best completed trials span 0.73 decades of learning rate (1.9e-3 to 1.0e-2). The lowest
+completed rate (2.9e-5) and the two highest (7.6e-2, 9.0e-2) are all among the four worst.
+
+fANOVA importance (`analyze_study.py`): **lr 0.746**, n_layers 0.098, width 0.077, batch_size 0.055,
+weight_decay 0.023. **Exploratory:** 27 adaptively chosen completed trials in this search space —
+a rerun can reorder the small values. This run does **not** measure how much time pruning saves
+(no pruning-off comparison was run).
+
+**History — two earlier runs, kept for the record, not for conclusions.**
+- *Job 18490083 (2026-09-24):* reporting to SQLite **every epoch** on the NFS home directory, two of
+  ten workers crashed with `database is locked`. Reporting every 10 epochs with a 60 s timeout then
+  ran cleanly — one observed run; Optuna itself advises against parallel SQLite on NFS.
+- *Job 18493245 (2026-09-24):* 50/50 trials, but **each worker used its own data split** (the
+  per-worker `--seed` also seeded the split), so trials were scored on different validation rows.
+  Found by the Reviewer 2026-09-25; its ranking is withdrawn. Evidence kept in
+  `team/reviews/2026-09-25_L11_evidence/history_job18493245_mixed_split/`.
