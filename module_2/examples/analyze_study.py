@@ -10,6 +10,7 @@ produces the analysis artifacts the homework asks for:
   - parallel_coords.html : interactive parallel-coordinates plot.
   - optimization_history.html : objective vs trial number.
   - param_importances.html : bar chart of hyperparameter importance.
+  - slice.html : each hyperparameter against the objective, one dot per trial.
 
 Usage
 -----
