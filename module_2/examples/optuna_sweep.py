@@ -32,7 +32,9 @@ Why not every epoch: each report is a write to the shared database. Ten
 workers writing every epoch to one SQLite file on ARCC's network home
 directory made workers crash with "database is locked" (measured 2026-09-24).
 Reporting every 10 epochs cuts the writes tenfold, and a 60 s lock timeout
-lets a worker wait its turn instead of failing.
+makes a worker wait longer for the lock -- it can still time out. Optuna
+advises against parallel SQLite on network file systems; journal storage is
+the fallback (module_2/readings/slurm_sweep_patterns.md).
 """
 
 from __future__ import annotations
