@@ -7,11 +7,15 @@
 # a shared SQLite database on the submit directory's filesystem. Together
 # they run ~50 trials in parallel via TPE sampler + Median pruner.
 #
-# Before running for the first time, create the (empty) study from the login node:
+# Before running for the first time, create the (empty) study from the login node,
+# in the directory you will submit from (your sweep/ folder):
 #
 #     optuna create-study --study-name lab2_sweep \
-#         --storage sqlite:///$SLURM_SUBMIT_DIR/optuna.db \
+#         --storage "sqlite:///$(pwd)/optuna.db" \
 #         --direction minimize
+#
+# Every worker uses ONE data split (optuna_sweep.py --split-seed, default 42);
+# --seed below only varies the sampler and the model initialisation per worker.
 #
 # Then submit:
 #
@@ -22,8 +26,10 @@
 #
 # ARCC setup confirmed 2026-06-06 (Phase 0 recon): account=me5475, partition=mb (CPU).
 # ML env: /project/me5475/envs/ml4sm includes optuna.
-# SQLite + 10 writers on ARCC's NFS home: OK only because the worker reports every
-# 10 epochs with a 60 s lock timeout (every epoch crashed workers, 2026-09-24).
+# SQLite on ARCC's NFS home: Optuna itself advises against parallel SQLite on NFS.
+# In our one test (2026-09-24), reporting every epoch crashed 2 of 10 workers with
+# "database is locked"; reporting every 10 epochs with a 60 s lock timeout then ran
+# 50/50 trials. That is one observed run, not a guarantee -- see the Lab 2 hints.
 # =============================================================================
 
 #SBATCH --job-name=lab2_optuna
