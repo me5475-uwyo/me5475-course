@@ -41,7 +41,7 @@ karpathy.github.io/2019/04/25/recipe. The most-cited practitioner's guide to tra
 
 ### [Primary] `module_2/readings/hyperparameter_tuning_guide.md`
 
-One-page Optuna + LR-range cheatsheet. Read fully.
+A short Optuna + LR-range guide. Read fully.
 
 ### [Primary] Bergstra & Bengio, *Random Search for Hyper-Parameter Optimization*, JMLR 13, 2012.
 
@@ -54,10 +54,6 @@ optuna.readthedocs.io/en/stable/tutorial/10_key_features/001_first.html. The 5-m
 ### [Optional] Goodfellow, Bengio & Courville, *Deep Learning*, Chapter 7 (Regularization).
 
 Sections 7.1 (parameter norm penalties), 7.4 (dataset augmentation), 7.8 (early stopping), 7.12 (dropout). Read 7.8 carefully.
-
-### [Optional] Pedregosa et al., *Hyperparameter selection for deep learning*, JMLR 22, 2021.
-
-Short, formal paper on how to choose hyperparameter search budgets.
 
 ---
 
