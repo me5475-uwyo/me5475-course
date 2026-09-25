@@ -38,6 +38,7 @@ lets a worker wait its turn instead of failing.
 from __future__ import annotations
 
 import argparse
+import hashlib
 from pathlib import Path
 
 import numpy as np
@@ -53,6 +54,7 @@ INPUT_COLS = ["eps_xx", "eps_yy", "gamma_xy"]
 OUTPUT_COLS = ["sigma_xx", "sigma_yy", "sigma_xy"]
 REPORT_EVERY = 10          # epochs between trial.report() calls (database writes)
 SQLITE_TIMEOUT_S = 60      # how long a worker waits for the SQLite lock
+SPLIT_SEED = 42            # ONE split for the whole study -- see load_and_split()
 
 
 def parse_args() -> argparse.Namespace:
@@ -62,7 +64,11 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--storage", default="sqlite:///optuna.db")
     p.add_argument("--n-trials", type=int, default=5, help="Trials per worker")
     p.add_argument("--max-epochs", type=int, default=2000)
-    p.add_argument("--seed", type=int, default=42)
+    p.add_argument("--seed", type=int, default=42,
+                   help="Sampler + model-initialisation seed. Differs per worker (the sbatch adds the task ID).")
+    p.add_argument("--split-seed", type=int, default=SPLIT_SEED,
+                   help="Train/val/test split seed. Must be THE SAME for every worker in a study, "
+                        "and for Task 4's retraining -- otherwise trials are scored on different rows.")
     return p.parse_args()
 
 
@@ -87,11 +93,20 @@ class MLP(nn.Module):
 # -----------------------------------------------------------------------------
 # Data: shared across all trials (each worker loads once)
 # -----------------------------------------------------------------------------
-def load_and_split(data_path: Path, seed: int):
+def load_and_split(data_path: Path, split_seed: int = SPLIT_SEED):
+    """70/15/15 split and train-only standardisation, fixed by split_seed.
+
+    Every worker in a study must call this with the SAME split_seed, so every
+    trial is trained and scored on the same rows with the same scaling. (Until
+    2026-09-25 the per-worker --seed was passed here, and each worker scored its
+    trials on a different validation set -- found by the Reviewer.) Task 4
+    reuses this function, with the same split_seed, so the test rows are ones no
+    trial ever saw.
+    """
     df = pd.read_csv(data_path)
     X = df[INPUT_COLS].to_numpy(dtype=np.float32)
     Y = df[OUTPUT_COLS].to_numpy(dtype=np.float32)
-    rng = np.random.default_rng(seed)
+    rng = np.random.default_rng(split_seed)
     idx = rng.permutation(len(X))
     n_val = int(0.15 * len(X))
     n_test = int(0.15 * len(X))
@@ -115,7 +130,15 @@ def load_and_split(data_path: Path, seed: int):
         "Y_val":   torch.tensor(std(Y[val_idx], mu_y, sigma_y)),
         "X_test":  torch.tensor(std(X[test_idx], mu_x, sigma_x)),
         "Y_test":  torch.tensor(std(Y[test_idx], mu_y, sigma_y)),
+        "split": {"seed": split_seed, "train_idx": train_idx, "val_idx": val_idx,
+                  "test_idx": test_idx, "fingerprint": split_fingerprint(val_idx, test_idx)},
     }
+
+
+def split_fingerprint(val_idx, test_idx) -> str:
+    """Short hash of the validation and test rows: identical in every worker's log iff the split is shared."""
+    h = hashlib.sha1(np.sort(val_idx).tobytes() + b"|" + np.sort(test_idx).tobytes())
+    return h.hexdigest()[:10]
 
 
 def make_objective(data: dict, max_epochs: int, seed: int):
@@ -167,7 +190,7 @@ def make_objective(data: dict, max_epochs: int, seed: int):
             with torch.no_grad():
                 val_loss = loss_fn(model(X_va), Y_va).item()
 
-            # --- Pruning report (every REPORT_EVERY epochs: each one is a database write) ---
+            # --- Pruning report: every REPORT_EVERY epochs (each is a DB write) ---
             if epoch % REPORT_EVERY == 0:
                 trial.report(val_loss, epoch)
                 if trial.should_prune():
@@ -192,7 +215,9 @@ def make_objective(data: dict, max_epochs: int, seed: int):
 # -----------------------------------------------------------------------------
 def main() -> None:
     args = parse_args()
-    data = load_and_split(args.data, args.seed)
+    data = load_and_split(args.data, args.split_seed)
+    print(f"Split seed {args.split_seed} -> split fingerprint {data['split']['fingerprint']} "
+          f"(must match in every worker's log)")
 
     storage = args.storage
     if storage.startswith("sqlite"):
