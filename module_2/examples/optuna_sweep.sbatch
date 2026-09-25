@@ -18,11 +18,12 @@
 #     sbatch optuna_sweep.sbatch
 #     squeue -u $USER          # 10 array tasks should show up
 #     # After ~10 minutes:
-#     python analyze_study.py --storage sqlite:///optuna.db --study lab2_sweep
+#     python analyze_study.py --storage sqlite:///optuna.db --study-name lab2_sweep
 #
 # ARCC setup confirmed 2026-06-06 (Phase 0 recon): account=me5475, partition=mb (CPU).
 # ML env: /project/me5475/envs/ml4sm includes optuna.
-# SQLite on VAST-based /project filesystem: tested OK for 10 concurrent writers.
+# SQLite + 10 writers on ARCC's NFS home: OK only because the worker reports every
+# 10 epochs with a 60 s lock timeout (every epoch crashed workers, 2026-09-24).
 # =============================================================================
 
 #SBATCH --job-name=lab2_optuna
