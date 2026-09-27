@@ -46,6 +46,10 @@ Skim 3–4 of the demos for variety. The linear-elasticity plate demo (`demos/pi
 
 The lab anchor. Read every cell and find its ten boundary conditions; then read the course's PyTorch port, `module_3/examples/plate_with_hole_fixed.py`, and check it imposes the same ten (Lab 3 Tasks 1a–1b). You read the notebook; you do not need to run it.
 
+### [Primary] `module_3/readings/plane_stress_and_plane_strain_primer.md`
+
+Read it before Task 1a. Min's notebook uses plane-stress constants; the port, the MOOSE reference and Lab 3 are plane strain. The primer derives both constitutive laws, shows how to tell them apart in code, and measures the difference on Lab 3's plate: for this plate's boundary conditions, each in-plane stress component is 9 % lower in plane stress, and the sideways displacement u₂ differs by 29 % (relative L2) (`measured_results.md` §8).
+
 ### [Primary] Haghighat, Raissi, Moure, Gomez & Juanes, *A physics-informed deep learning framework for inversion and surrogate modeling in solid mechanics*, Comput. Methods Appl. Mech. Eng. 379, 113741, 2021.
 
 *Skim.* The paper Min's notebook cites. It treats displacements and stresses as separate network outputs — the mixed (u, σ) formulation Lab 3 uses — and covers the inverse-problem framing you will meet again in L18.
