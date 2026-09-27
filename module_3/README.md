@@ -55,6 +55,7 @@ module_3/
     ├── reading_list.md                       annotated bibliography, lecture by lecture
     ├── deepxde_quickstart.md                 DeepXDE in two pages
     ├── pinn_failure_modes.md                 measured failures, the four tricks, and newer ones
+    ├── plane_stress_and_plane_strain_primer.md  why Min's notebook (plane stress) and Lab 3 (plane strain) differ
     └── measured_results.md                   every computed number the readings and lab cite
 ```
 
