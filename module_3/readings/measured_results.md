@@ -268,3 +268,51 @@ initial ℒ_PDE 45.8 vs 50.2), and on the laptop the 1-D L-BFGS "drop" does not 
 `pip install deepxde` would add to the demo env (`pip install --dry-run`, report in `team/reviews/2026-09-26_L13_evidence/laptop_logs/`):
 DeepXDE 1.15.0, scikit-learn 1.6.1, scikit-optimize 0.10.2, scipy 1.13.1, joblib 1.5.3, threadpoolctl 3.7.0,
 pyaml 26.7.0, PyYAML 6.0.3 — 8 packages, 131 MB installed; numpy, matplotlib and torch already satisfy it.
+
+## 8 · Plane stress vs plane strain — the same plate, both models (for the plane-stress/strain primer)
+
+**Date and job:** 2026-09-27, ARCC job 19576019. Node `mbcpu-001`, partition `mb`, 8 MPI ranks; 1 min 52 s
+for the whole job, including two grid extractions. Evidence: `team/reviews/2026-09-27_planestress_evidence/`,
+containing the job script, the comparison script, the job log and the postprocessor CSV.
+
+**What was run.**
+- The shared plane-strain input, `module_3/examples/plate_square_hole_reference.i`, on the shared mesh
+  (nt = 192, nr = 384), unchanged except for two command-line overrides:
+  - `youngs_modulus = E(1 + 2ν)/(1 + ν)² = 0.9467455621301775`;
+  - `poissons_ratio = ν/(1 + ν) = 0.23076923076923078`.
+- Plane strain with these constants is exactly plane stress with E = 1 and ν = 0.3, the constants of Min
+  Lin's notebook. The mapping is exact for u₁, u₂, σ₁₁, σ₂₂ and σ₁₂; this run's σ₃₃ and von Mises values are
+  not plane-stress values and are not used.
+- Both solutions were sampled on the same 200 × 200 grid with `extract_moose_reference.py`: 39 671 points,
+  0 NaN.
+
+| quantity | plane stress | plane strain (§1) | ratio |
+|---|---|---|---|
+| σ₁₁ at (0, 0.1) | 2.9500246 | 3.2417853 | 0.9100000 |
+| mean σ₁₁ on the loaded edge | 0.9768370 | 1.0734472 | 0.9100000 |
+| reaction on the loaded edge | 0.9768360 | 1.0734459 | 0.9100002 |
+| σ₁₁(0, 0.1) / mean σ₁₁ on the loaded edge | 3.01998 | 3.01998 | 1 |
+
+Plane-stress equilibrium check: the left and right reactions sum to 3.3e-8.
+
+**Relative L2 difference on the grid, plane stress vs plane strain:**
+- u₁: 1.02e-3;
+- u₂: **2.92e-1**;
+- σ₁₁, σ₂₂ and σ₁₂: **9.0000e-2 each**.
+
+**Out-of-plane stress in plane strain.** σ₃₃ = ν(σ₁₁ + σ₂₂) reaches a maximum of 0.966 on the grid; its
+relative L2 size is ‖σ₃₃‖/‖σ₁₁‖ = 0.301.
+
+**Reading.**
+- **The exact result.** For this plate, each in-plane stress component (σ₁₁, σ₂₂, σ₁₂) is exactly (1 − ν²) = 0.91 times its plane-strain value.
+  - It holds for these boundary conditions only: frictionless constant-u₁ grips left and right, bottom symmetry, and a traction-free top and hole, with homogeneous isotropic small-strain elasticity and no body force.
+  - It is not a general conversion factor. The argument is in `plane_stress_and_plane_strain_primer.md` §5.
+  - σ₃₃ is not scaled: it is zero in plane stress and generally nonzero in plane strain.
+- **The FE numbers agree within numerical error.** On the grid, ‖σ_ps − 0.91 σ_pe‖ / ‖σ_pe‖ is:
+  - σ₁₁: 2.0e-10;
+  - σ₂₂: 1.0e-8;
+  - σ₁₂: 5.1e-9.
+
+  The largest pointwise |σ_ps − 0.91 σ_pe| is 8.5e-8, against field maxima of 0.90–3.20. This came from `scaled_residual.py` on the saved grids (arithmetic on a login node, no new solve); its output is in the evidence folder. The reaction ratio, 0.9100002, is likewise within numerical error of 0.91.
+- **The displacements do change.** The relative L2 difference in u₂ is 29 %, because the effective
+  Poisson ratio is 0.3 in plane stress and 0.43 in plane strain.
