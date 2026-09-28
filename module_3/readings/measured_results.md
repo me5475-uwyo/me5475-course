@@ -39,6 +39,13 @@ Job wall time is SLURM's `Elapsed` for the whole job (start-up included) on 8 CP
 Finest level: **reaction on the loaded edge `reaction_right_x` = 1.0734459** (left edge −1.0734458;
 imbalance 1.8e-7); average σ_xx on the right edge 1.07345; area 1 − π/400 to 1e-14.
 
+> **Note (2026-09-27) on §2–§6 — the sampler.** These results use the released DeepXDE sampler, which includes some
+> points inside the removed hole. At the forward script's default seed 42, 52 of 4 600 training points are
+> affected, including left- and bottom-edge BC samples. The field errors remain measured against the physical
+> MOOSE reference. The soft/hard pairs share the same sampler, so they compare the released implementations;
+> they do not isolate enforcement on a corrected sampling of the intended domain. A one-seed filtered run
+> changed errors in both directions.
+
 ## 2 · Soft-BC PINN vs the reference — the three σ₁₂ = 0 conditions matter
 
 `plate_with_hole_fixed.py`, defaults (Adam 50 000 + L-BFGS), `sbatch pinn_train.sbatch`, ARCC-GPU.
@@ -119,6 +126,8 @@ fingerprint (`3edc926b52`, 19 835 validation points) in every worker log; 0 erro
 
 ## 6 · Soft vs hard BCs — controlled, three seeds (Task 3's comparison)
 
+*See the sampler note before §2: both runs of each pair use the released sampler.*
+
 2026-09-26, ARCC-GPU, jobs 19273824–19273829, `SEED=<s> sbatch pinn_train.sbatch [hard_bc]` with the
 final scripts (hashes in `~/me5475-demo/L3-validate/optionA/code_md5.txt`). Within each pair: the same
 4 000 + 600 sampled points and the same initial weights (checked: identical arrays at seeds 42 and 43),
@@ -139,7 +148,9 @@ relative L2 on the 39 671-point reference grid; σ₁₁ is evaluated exactly at
 **What the three pairs show (a release check, not proof):** soft had the lower displacement error in
 3/3 pairs; hard had the lower σ₂₂ error in 3/3, lower σ₁₁ and σ₁₂ errors in 2/3, and σ₁₁ at the hole
 top closer to MOOSE in 3/3; hard met the displacement conditions exactly (soft: ~2e-3). **Under the same
-schedule the hard runs were not faster** — 5–14 % more wall time (the transform adds work per step);
+schedule the hard runs were not faster** — 6–14 % more training time, Adam + L-BFGS from the table (5–13 % for
+the whole job, SLURM `Elapsed`); Adam alone, with the same 50 000 steps, took 8–12 % longer: the transform
+adds work per step;
 the "2× faster" of earlier drafts compared unequal schedules (hard had half the Adam steps) and is
 superseded by this controlled comparison. Seed 42 soft
 reproduces §3's run exactly (6.014e-4): the runs are deterministic on this hardware.
