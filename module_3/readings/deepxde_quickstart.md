@@ -4,7 +4,7 @@
 
 A practitioner's quickstart. Keep this open while writing PINN scripts. The course environment is DeepXDE 1.15.0 with the PyTorch 2.5.1 backend (`/project/me5475/envs/ml4sm`); every call below was checked against that version. Numbers from course runs cite `module_3/readings/measured_results.md` by section.
 
-**On ARCC, anything that trains — even the 1-D template at the end — runs as a submitted job**, never on the login node: `sbatch pinn_diffusion.sbatch` for the 1-D and 2-D diffusion examples (a CPU job — they need no GPU; `measured_results.md` §7), `sbatch pinn_train.sbatch` for the plate PINNs, or a copy of either pointed at your script. Course rule: at most two of your GPU jobs at a time.
+**On ARCC, anything that trains — even the 1-D template at the end — runs as a submitted job**, never on the login node: `sbatch pinn_diffusion.sbatch` for the 1-D and 2-D diffusion examples (a CPU job — they need no GPU; `measured_results.md` §7), `sbatch pinn_train.sbatch` for the plate PINNs, or a copy of either pointed at your script. Course rule: at most two of your GPU jobs at a time. The last subsection, *Running the L13 demo on ARCC, step by step*, walks through the diffusion jobs command by command.
 
 ---
 
@@ -213,3 +213,96 @@ print("max |error|:", np.abs(u_pred - np.sin(np.pi * x_test)).max())
 ```
 
 Substituting the geometry, residual, BCs and network shape takes you to the 2-D warm-up (`pinn_diffusion_2d.py`) and to the forward plate problems of Lab 3 Tasks 1 and 3. The sweep and the inverse problem add a few more pieces; read `pinn_optuna_sweep.py` and `plate_with_hole_inverse.py` for those.
+
+### Running the L13 demo on ARCC, step by step
+
+These are the steps L13 runs live, for the two scripts `pinn_diffusion_1d.py` and `pinn_diffusion_2d.py` and their job script `pinn_diffusion.sbatch`. Follow along in class, or use them afterwards to catch up. Off campus you need the UW VPN.
+
+**1 · Log in, make a folder, copy the three files.**
+
+```bash
+ssh <netid>@medicinebow.arcc.uwyo.edu
+mkdir -p ~/me5475/L13 && cd ~/me5475/L13
+cp /project/me5475/examples/pinn_diffusion.sbatch \
+   /project/me5475/examples/pinn_diffusion_1d.py \
+   /project/me5475/examples/pinn_diffusion_2d.py .
+```
+
+- **Any folder works.** The job writes its output next to the files.
+- **The same three files** are in your course repository, under `module_3/examples/`.
+- **No `setup5475.sh` needed:** the job script activates the course environment itself.
+
+**2 · Submit both jobs, then watch the 1-D one.**
+
+```bash
+J1=$(sbatch --parsable pinn_diffusion.sbatch 1d)
+J2=$(sbatch --parsable pinn_diffusion.sbatch 2d)
+echo $J1 $J2
+squeue -u $USER
+tail -F pinn-diffusion-$J1.out        # Ctrl-C stops watching, not the job
+```
+
+- **`--parsable`** makes `sbatch` print only the job number, which the two variables keep.
+- **Both are CPU jobs,** four cores and no GPU, so they do not count against the two-GPU-jobs rule.
+- **`squeue`** lists them as `PD` (waiting) or `R` (running).
+- **If the 1-D job has not started yet,** `tail` first says *cannot open … No such file or directory*. That is harmless: it keeps waiting, and starts following as soon as the job writes.
+
+**3 · What the 1-D job prints, in order.**
+1. **A note that two modules "were not unloaded".** It is harmless.
+2. **`----- Job start: …`**, then **`Script: pinn_diffusion_1d.py`**.
+3. **`Using backend: pytorch`.** If it names another backend, see the table below. The lines suggesting other backends are DeepXDE's advertising; ignore them.
+4. **`Compiling model...`, then `Training model...`, then the Adam loss table,** one row every 1 000 steps. `Train loss` is [ℒ_PDE, ℒ_BC] on the training points. `Test loss` is the same two terms, with ℒ_PDE on separately sampled test points; ℒ_BC reuses the training boundary points (see *Two things the test loss is and is not*, above). `Test metric` is the relative L2 error against the exact solution.
+5. **A second `Compiling model...` and the L-BFGS table,** rows 5000 and 5060: L-BFGS stopped by itself after 60 steps.
+6. **The summary and the plot.** The 1-D job takes about half a minute from start to finish (§7.1).
+
+**Watch the last two rows of the Adam table** (`measured_results.md` §7.1). From step 4000 to step 5000, ℒ_PDE falls from 6.80e-05 to 5.78e-05, but the test error *rises* threefold, from 3.57e-04 to 1.09e-03, and ℒ_BC rises too. A falling loss is not a falling error. The job ends with:
+
+```
+=== L13 summary, 1-D ===
+                               L_PDE      L_BC  test rel. L2 error
+end of Adam (5000 its)      5.78e-05  8.40e-07            1.09e-03
+end of L-BFGS (+60 its)     1.21e-05  6.82e-10            2.77e-05
+max |u_NN - u| on 1001 evenly spaced points: 3.54e-05
+Wrote pinn_diffusion_1d.png
+```
+
+**4 · Check that both jobs finished, then read the 2-D result.** The 2-D job takes about two minutes, and more when the node is busy (§7.1–§7.2).
+- **An empty `squeue` only means the jobs have left the queue, not that they succeeded.** Check with `sacct -j $J1,$J2 --format=JobID,State,Elapsed`, which should say `COMPLETED`, or look at the end of the output:
+
+```bash
+tail -8 pinn-diffusion-$J2.out
+```
+
+```
+=== L13 summary, 2-D ===
+                               L_PDE      L_BC  test rel. L2 error
+end of Adam (5000 its)      4.74e-04  5.07e-03            9.61e-02
+end of L-BFGS (+1501 its)   1.94e-06  9.03e-07            1.05e-03
+max |u_NN - u| on a 101 x 101 grid: 2.54e-03
+Wrote pinn_diffusion_2d.png
+```
+
+- **In a new terminal, `$J1` and `$J2` are gone.** Run `ls pinn-diffusion-*.out`: the larger number is the 2-D job.
+- **These are the numbers the course's ARCC runs printed, to every digit (§7.1).** Another machine, or a GPU, can differ in the last digits (§7.3).
+
+**5 · Look at the plots.** In VS Code connected to ARCC (as in L8's guide, `module_0/readings/running_the_l8_demo_on_arcc_guide.md`), click the `.png` in the file tree. Or copy it to your laptop, from a terminal *on the laptop*:
+
+```bash
+scp <netid>@medicinebow.arcc.uwyo.edu:me5475/L13/pinn_diffusion_1d.png .
+```
+
+- **1-D, four panels:** the solution, with the 52 collocation points as ticks along the bottom; the error on a log axis; the two loss terms against step; and the test error against step.
+- **2-D:** the top row shows the exact solution, the PINN, and the error, on its own colour scale. The bottom row shows the loss terms and the test error, where Adam's plateau is followed by the L-BFGS drop.
+
+**If something goes wrong**
+
+| you see | what it means / what to do |
+|---|---|
+| `cp: cannot stat '/project/me5475/…': Permission denied` | Your account is not in the course group yet. Tell the instructor; meanwhile, copy the files from your repository's `module_3/examples/`. |
+| `sbatch: error: … account` or `… partition` | Your ARCC account is not on the course allocation `me5475` yet. Tell the instructor. |
+| still `PD` in `squeue` after a few minutes | The queue is busy. The job starts by itself; nothing to do. `squeue -u $USER` shows the reason in the last column. |
+| `tail: cannot open …` | The job has not started writing yet. It is harmless; `tail -F` keeps waiting. |
+| a backend other than `pytorch` on the first lines | The script sets the backend before importing DeepXDE, so this means the copy was edited. Copy the three files again. |
+| `squeue` empty, but no summary at the end of the `.out` | The job failed. `grep -i error pinn-diffusion-*.out` shows why; check that the script is unedited and that you submitted it with `sbatch`. |
+| `ModuleNotFoundError: No module named 'deepxde'` | You ran `python pinn_diffusion_1d.py` directly, outside the course environment and on the login node. Submit it with `sbatch` instead. |
+| different numbers from the ones above | The recorded course CPU runs matched these displayed digits. Different hardware or runtime versions can change the last digits; a laptop or a GPU may. First check the script, the options and the environment. |
