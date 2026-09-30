@@ -46,6 +46,47 @@ imbalance 1.8e-7); average σ_xx on the right edge 1.07345; area 1 − π/400 to
 > they do not isolate enforcement on a corrected sampling of the intended domain. A one-seed filtered run
 > changed errors in both directions.
 
+**Re-run with the students' job script (2026-09-28, for `moose_plate_walkthrough.md`).**
+`module_3/examples/run_plate_reference.sbatch`, 8 CPU cores of partition `mb`, same input file, reproduces the
+table's σ_xx at (0, 0.1) to all six digits:
+- **24/48, the script's default** (jobs 19692369, 19771436): 3.23799, in 4–19 s whole-job `Elapsed`. The
+  MOOSE step itself took 4 s in both; the rest is job start-up, which varied with the node's load.
+- **48/96** (job 19691400): 3.24086, in 6 s.
+- **192/384, with `--mem=48G`** (job 19771434): 3.24179, reaction 1.0734459, in 1 min 40 s. MaxRSS was 4.6 GB
+  on the largest of the 8 ranks.
+
+Newton took two iterations at every level, as the input file's comment on the nodal stress output says.
+The other checks at 24/48 → 48/96:
+
+| check | exact | 24/48 | 48/96 |
+|---|---|---|---|
+| `area` | 1 − π/400 = 0.99214602 | 0.99214602 (+1.9e-11) | 0.99214602 (+1.2e-12) |
+| `hole_length` | π/20 = 0.15707963 | 0.15707963 (−1.9e-10) | 0.15707963 (−1.2e-11) |
+| `reaction_right_x` / `reaction_left_x` | equal and opposite | 1.073361 / −1.073342 | 1.073425 / −1.073421 |
+| `traction_top_x`, `_y` | → 0 | 2.7e-5, 6.0e-5 | 6.7e-6, 1.6e-5 |
+| `traction_hole_x`, `_y` | → 0 | 5.0e-5, −4.9e-5 | 1.3e-5, −1.3e-5 |
+| `ux_right_min`, `_max` | 1 | 1, 1 | 1, 1 |
+
+The traction-free edges carry no boundary condition in the input file. The four `traction_*` values are
+integrated traction resultants (signed integrals of a traction component along the edge), so they are a
+consistency check, not a pointwise bound. They fall 3.7–4.1× per mesh doubling. `extract_moose_reference.py --exodus plate_square_hole_reference_out.e --mode grid --nx 50
+--ny 50` on the 24/48 output wrote 2 478 in-plate points in 4.9 s on the login node.
+
+**E override (job 19771435, 24/48, `Materials/elasticity_tensor/youngs_modulus=2`).** Every stress and reaction
+postprocessor is exactly doubled: ratio 2.0000000000 for σ_xx at (0, 0.1), both reactions, the edge-average
+stress and the peak von Mises stress. On the extracted 50 × 50 grid, u₁ and u₂ agree with the E = 1 run to
+4.4e-16, and the stresses equal twice E = 1's to 5.6e-13. This is the displacement-loaded plate's E-independence
+of the displacements (Lab 3, "Why a force is needed").
+
+The job script prints its checks as §7.6 describes: this run's own CSV, by name
+(`plate_square_hole_reference_out.csv`, or `<name>.csv` with `Outputs/file_base=<name>`). Two plate runs with
+distinct file bases, submitted together into one folder (jobs 21281202 `nt=24 nr=48 Outputs/file_base=plate_coarse`
+and 21281204 `nt=48 nr=96 Outputs/file_base=plate_refined`, both started 08:54:07), each printed their own CSV:
+2 304 and 9 216 elements, with the digits above.
+
+Evidence:
+`team/reviews/2026-09-28_moose_walkthroughs_evidence/L14-moose/`.
+
 ## 2 · Soft-BC PINN vs the reference — the three σ₁₂ = 0 conditions matter
 
 `plate_with_hole_fixed.py`, defaults (Adam 50 000 + L-BFGS), `sbatch pinn_train.sbatch`, ARCC-GPU.
@@ -221,6 +262,13 @@ Exact demo commands from `~/me5475-demo/L13-validate/rehearsal/` (both jobs subm
 | Adam / L-BFGS | 10.3 s / 0.18 s | 72.0 s / 22.9 s |
 
 Every earlier job that day started within 1–20 s (Saturday; a Wednesday 13:00 queue is **not measured**).
+
+**Wednesday morning, 2026-09-30.** The same unedited scripts, copied from `/project/me5475/examples/`, printed every
+summary digit above, on `mbcpu-002`:
+- 07:58, jobs 21230523/25: no queue wait; 1-D 32 s, 2-D 1 min 42 s whole-job `Elapsed`.
+- 09:03, jobs 21289130/32: the node had 93 of 96 cores allocated; no queue wait; 1-D 28 s, **2-D 3 min 13 s**.
+
+So a busy node can stretch the 2-D job past the 2 min 33 s above; the digits did not change.
 `scp` of both PNGs and both logs to the laptop: 5 s. **The loss table streams live:** with
 `PYTHONUNBUFFERED=1` under `srun`, rows appeared in the `.out` file as printed (2-D poll: 1 row at +32 s,
 3 at +81 s, 5 at +112 s, 9 at +160 s; `arcc_logs/live_stream_poll_2d.log`). `import deepxde` on a cold
@@ -279,6 +327,59 @@ initial ℒ_PDE 45.8 vs 50.2), and on the laptop the 1-D L-BFGS "drop" does not 
 `pip install deepxde` would add to the demo env (`pip install --dry-run`, report in `team/reviews/2026-09-26_L13_evidence/laptop_logs/`):
 DeepXDE 1.15.0, scikit-learn 1.6.1, scikit-optimize 0.10.2, scipy 1.13.1, joblib 1.5.3, threadpoolctl 3.7.0,
 pyaml 26.7.0, PyYAML 6.0.3 — 8 packages, 131 MB installed; numpy, matplotlib and torch already satisfy it.
+
+### 7.6 · The same two problems in MOOSE (`diffusion_1d.i`, `diffusion_2d.i`) — ARCC-CPU, 2026-09-28
+
+`[fallback]` — Co-Worker (Opus 5.5). For `moose_diffusion_walkthrough.md`. Linear Lagrange elements, `Diffusion` +
+`BodyForce` kernels, `DirichletBC` on every side, `Steady` + Newton + LU (MUMPS); MOOSE git 437fbe5082
+(2026-03-09), `/project/me5475/software/rom_opt_arcc/rom_opt-opt`, via `module_3/examples/run_moose_diffusion.sbatch`
+(1 rank, partition `mb`, node `mbcpu-001`). `l2_error` is `ElementL2Error`, the **absolute** L2 norm of
+u_h − u_exact over the domain; `u_mid` / `u_centre` is `PointValue` at x = 0.5 / (0.5, 0.5), exact value 1.
+
+| case | nx (per side) | unknowns | `l2_error` | ratio to next finer | `u_mid` / `u_centre` |
+|---|---|---|---|---|---|
+| 1-D | 25 | 26 | 9.30e-4 | 4.00 | 0.99803 |
+| 1-D | **50 (default)** | 51 | **2.33e-4** | 4.00 | 1.0000000 |
+| 1-D | 100 | 101 | 5.82e-5 | 4.00 | 1.0000000 |
+| 1-D | 200 | 201 | 1.45e-5 | — | 1.0000000 |
+| 2-D | 25 | 676 | 6.58e-4 | 4.00 | 0.99737 |
+| 2-D | **50 (default)** | 2 601 | **1.64e-4** | 4.00 | 1.00033 |
+| 2-D | 100 | 10 201 | 4.11e-5 | 4.00 | 1.00008 |
+| 2-D | 200 | 40 401 | 1.03e-5 | — | 1.00002 |
+
+- **Rate.** Each doubling of nx divides `l2_error` by 4.00 (3.9985–3.99996): second order in h, the expected
+  L2 rate for linear elements.
+- **Newton.** One step on this linear problem: |R| 9.87e-1 → 6.9e-14 in the default 1-D run (job 19770339),
+  1.97e-1 → 1.4e-14 in the default 2-D run (job 19770340).
+- **Cost.** Every job 1–8 s whole-job `Elapsed`, 1–2 s for the MOOSE step; MaxRSS 0.16–0.26 GB (`sacct`).
+- **nx = 25.** x = 0.5 is then the middle of an element, not a node, so `u_mid` is interpolated between nodes
+  (0.99803 in 1-D).
+- **The line sampler** (`u_line`, 101 points, default 1-D run): the largest |u_h − sin(πx)| at those points is
+  4.9e-4. Half of the points fall between nodes, where linear interpolation error dominates. The walkthrough's
+  plotting snippet printed this, run verbatim on the login node.
+- **Default runs repeated** (jobs 19692364, 19692514) gave the same digits. The refinement jobs are
+  19691378–19691394. Job 19691396 checked the script's usage message for an unknown case (`3d`).
+- **Same-folder race** (job 19692367, `2d nx=100`, submitted to the same folder at the same moment as a
+  default `2d` job): MOOSE solved the 10 201-unknown mesh, but the CSV that the script printed at the end was the other
+  job's. The job scripts and the walkthrough therefore say "one folder per run of the same case".
+
+Evidence (logs, CSVs, `sacct`): `team/reviews/2026-09-28_moose_walkthroughs_evidence/L13-moose/`. After the
+runs above, the files changed only in comments (the race warning; the spacing of two comments in
+`diffusion_1d.i`). The final input files, re-run (jobs 19770339, 19770340), gave the same digits.
+
+**How the job script prints the checks (2026-09-30).** It prints this run's own postprocessor CSV, chosen by name:
+`diffusion_1d_out.csv` / `diffusion_2d_out.csv`, or `<name>.csv` when the overrides include
+`Outputs/file_base=<name>`. It prints it only if the run wrote it after starting; otherwise it says so and points to
+MOOSE's own table in the log. It never prints "some recent CSV". Tests, each in a fresh folder:
+- **Concurrent 1-D and 2-D in one folder,** as the walkthrough allows (jobs 21281199 and 21281201, both started
+  08:54:07): each printed its own CSV, with 51 and 2 601 unknowns.
+- **A renamed run with a stale default CSV present** (21281198, then 21282096, `1d nx=100
+  Outputs/file_base=run_nx100`): it printed `run_nx100.csv`.
+- **A run that writes no CSV, with a stale one present** (21281205, then 21282098, `Outputs/csv=false`): it printed
+  "this run wrote no new diffusion_1d_out.csv", not the stale file.
+
+An earlier version of the script, which printed the newest CSV in the folder, could show another job's checks.
+The Reviewer's gate found that, and this version replaces it.
 
 ## 8 · Plane stress vs plane strain — the same plate, both models (for the plane-stress/strain primer)
 
