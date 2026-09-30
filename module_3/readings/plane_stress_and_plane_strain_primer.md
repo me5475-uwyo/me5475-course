@@ -1,6 +1,6 @@
 # Plane Stress and Plane Strain — A Primer
 
-*Module 3. Read it before Lecture 14 (Fri Oct 2) and before Lab 3 Task 1, where you compare Min Lin's notebook with the course's port. Companions: `module_3/examples/min_lin_2D_hole_example.ipynb` (plane stress) and `module_3/examples/plate_with_hole_fixed.py` (plane strain).*
+*Module 3. Read it before Lecture 14 (Fri Oct 2) and before Lab 3 Task 1, where you compare Min Lin's notebook with the course's port. Companions: `module_3/examples/min_lin_2D_hole_example.ipynb` (plane stress) and `module_3/examples/plate_with_hole_fixed.py` (plane strain). The last section runs the port on ARCC, step by step.*
 
 Lab 3's plate is two-dimensional, but every real body is three-dimensional. There are two standard ways to reduce 3-D elasticity to 2-D, and **they are not the same problem**. Min Lin's notebook uses one of them: **plane stress**. The course's PyTorch port, the shared MOOSE reference, and Lab 3's reference and PINN results in `module_3/readings/measured_results.md` (§1–§6) use the other: **plane strain**. This reading shows where the difference lives in the equations and in the code, and how much it changes Lab 3's answer. Measured numbers cite `measured_results.md` by section; the elastic constants in the tables are exact arithmetic from the formulas shown.
 
@@ -143,3 +143,77 @@ Neither model is more correct in general; each is an idealisation. What matters 
 4. A bar with free sides is pulled to strain ε. What stress does each model give, and what is their ratio? *(E·ε and E/(1 − ν²)·ε; ratio 1 − ν². Section 5 measures the same ratio on Lab 3's plate.)*
 
 **Further reading.** Timoshenko & Goodier, *Theory of Elasticity*, 3rd ed. (McGraw-Hill, 1970), Chapter 2, "Plane Stress and Plane Strain". Any elasticity text's chapter on two-dimensional problems covers the same ground.
+
+---
+
+## Running the port on ARCC, step by step
+
+The course's plane-strain port, `plate_with_hole_fixed.py`, is the script L14 walks through and Lab 3 Task 1c trains. These steps run it once, as a first try. For the lab itself, use Task 1c's folder and commands, which submit the same job. Off campus you need the UW VPN.
+
+**1 · Log in, make a folder, copy the two files.**
+
+```bash
+ssh <netid>@medicinebow.arcc.uwyo.edu
+mkdir -p ~/me5475/L14 && cd ~/me5475/L14
+cp /project/me5475/examples/plate_with_hole_fixed.py /project/me5475/examples/pinn_train.sbatch .
+```
+
+- **The same two files** are in your course repository, under `module_3/examples/`.
+- **No `setup5475.sh` needed:** the job script activates the course environment itself.
+
+**2 · Submit it, then watch it.**
+
+```bash
+J=$(sbatch --parsable pinn_train.sbatch)     # default: plate_with_hole_fixed.py, seed 42
+squeue -u $USER
+tail -F pinn-$J.out                          # Ctrl-C stops watching, not the job
+```
+
+- **This is a GPU job:** one GPU on `mb-l40s` or `mb-a30`, with a one-hour limit.
+- **It counts toward the course rule of at most two GPU jobs at a time.** Do not submit it twice "to be safe".
+- **Allow about 8–13 minutes on an A30.** That is the range of the course's runs of this script (`measured_results.md` §2, §6). Queue wait comes on top.
+- **`squeue` lists it as `PD` (waiting) or `R` (running).** While it waits, the last column gives the reason; it starts by itself.
+
+**3 · What it prints: two files, not one.**
+
+**`pinn-<jobid>.out`** holds the header, then the training:
+- `Hostname:`, the GPU node;
+- `Variant: fixed`, `Script: plate_with_hole_fixed.py`, `Args: --epochs 50000 --seed 42`;
+- `PyTorch: 2.5.1+cu121 CUDA: True`. **`CUDA: True` means the job got its GPU.**
+- `Warning: CSGDifference.uniform_points not implemented. Use random_points instead.` This is harmless: DeepXDE samples the plate at random points instead.
+- `Compiling model...`, `Training model...`, then the loss table.
+
+**`pinn-<jobid>.err`** holds the note that two modules "were not unloaded", a harmless `GpuFreq=control_disabled`, and `Using backend: pytorch`: DeepXDE prints its backend line to the error stream. Check it once with `head pinn-$J.err`.
+
+**The loss table.** It prints one row every 1 000 steps: first for Adam up to step 50 000, then for L-BFGS until it stops by itself. Each row has three columns:
+- **`Train loss`:** 15 terms, in the order L15 also uses. Terms 0–4 are the five PDE residuals (two momentum, three Hooke). Terms 5–7 are the displacement conditions (left u₁, right u₁, bottom u₂). Terms 8–14 are the stress conditions (σ₁₂ on the left, bottom and right; σ₂₂ and σ₁₂ on the top; the two hole tractions).
+- **`Test loss`:** the five PDE terms use separately sampled test points; the ten BC terms reuse the training boundary points, so this is not an independent boundary-condition check.
+- **`Test metric`:** empty, `[]`. The port computes no error inside the job; Lab 3 Task 2 measures it against MOOSE.
+
+**A small loss is not a correct answer.** An earlier port of this script, missing three of these conditions, reached as small a training loss (7.3e-6) with a relative displacement error of 0.597 (§2).
+
+**4 · Check it finished, and what it wrote.** Run `sacct -j $J --format=JobID,State,Elapsed`: it should say `COMPLETED`, and the `.out` ends with `Wrote plate_with_hole_fixed.png` and `Done.`
+
+| file | what it is |
+|---|---|
+| `plate_with_hole_fixed.png` | six panels: u₁, u₂, σ₁₁, σ₂₂, σ₁₂ and the plane-strain von Mises stress. Lab 3 Task 1d submits it. |
+| `plate_with_hole_fixed.pt-<step>.pt` | the trained network (DeepXDE adds the step number to the name) |
+| `plate_with_hole_fixed.loss.npz` | the loss history: `loss_train`, `loss_test`, `steps` |
+| `pinn-<jobid>.out`, `pinn-<jobid>.err` | the two logs |
+
+**5 · Look at the figure.** In VS Code connected to ARCC (as in L8's guide, `module_0/readings/running_the_l8_demo_on_arcc_guide.md`), click the `.png` in the file tree. Or copy it to your laptop, from a terminal *on the laptop*:
+
+```bash
+scp <netid>@medicinebow.arcc.uwyo.edu:me5475/L14/plate_with_hole_fixed.png .
+```
+
+**If something goes wrong**
+
+| you see | what it means / what to do |
+|---|---|
+| `cp: cannot stat '/project/me5475/…': Permission denied` | Your account is not in the course group yet. Tell the instructor; meanwhile, copy the files from your repository's `module_3/examples/`. |
+| `sbatch: error: … account` or `… partition` | Your ARCC account is not on the course allocation `me5475` yet. Tell the instructor. |
+| still `PD` in `squeue` for a long time | The GPU queue is busy. It starts by itself. Do not resubmit: a second copy counts against the two-GPU rule. |
+| `CUDA: False` in the header | The job has no GPU, probably because the `#SBATCH` lines were edited. Cancel it (`scancel $J`) and submit the unedited script. |
+| no `Done.` at the end of the `.out` | The job stopped early. `cat pinn-$J.err` shows why; `DUE TO TIME LIMIT` there means it hit the one-hour limit. |
+| `ModuleNotFoundError: No module named 'deepxde'` | You ran `python plate_with_hole_fixed.py` directly, outside the course environment and on the login node. Submit it with `sbatch` instead. |
