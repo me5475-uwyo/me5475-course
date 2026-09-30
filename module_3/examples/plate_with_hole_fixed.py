@@ -166,12 +166,12 @@ def build_problem(num_domain: int = 4000, num_boundary: int = 600, num_test: int
     bc_bottom_S12 = dde.icbc.DirichletBC(geom, lambda x: 0.0, is_bottom, component=4)
     bc_right_S12 = dde.icbc.DirichletBC(geom, lambda x: 0.0, is_right, component=4)
 
-    # Neumann BCs: traction-free on top and hole boundaries
+    # Top traction BCs, imposed on stress outputs
     bc_top_S22 = dde.icbc.DirichletBC(geom, lambda x: 0.0, is_top, component=3)
     bc_top_S12 = dde.icbc.DirichletBC(geom, lambda x: 0.0, is_top, component=4)
 
     def hole_normal_traction(x, u_pred):
-        # n = (x_1, x_2) / |x| on the hole boundary
+        # n = x/r is disk-outward (the plate's is -x/r); sign moot for t = 0
         nx = x[:, 0:1] / HOLE_RADIUS
         ny = x[:, 1:2] / HOLE_RADIUS
         S11 = u_pred[:, 2:3]; S22 = u_pred[:, 3:4]; S12 = u_pred[:, 4:5]
