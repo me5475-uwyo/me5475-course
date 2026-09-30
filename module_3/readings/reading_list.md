@@ -38,6 +38,15 @@ The DeepXDE framework paper. The examples section is the most useful for practit
 
 Skim 3–4 of the demos for variety. The linear-elasticity plate demo (`demos/pinn_forward/elasticity.plate`) uses the same mixed (u, σ) formulation as Lab 3.
 
+### [Optional] `module_3/readings/moose_diffusion_walkthrough.md`
+
+The same two diffusion problems, solved with finite elements in MOOSE. It covers:
+- the weak form and its two kernels;
+- the input files `examples/diffusion_1d.i` and `diffusion_2d.i`;
+- running them as a CPU job (`run_moose_diffusion.sbatch`), and what the log should show.
+
+Read it after L13. It shows how to run MOOSE; it is not a comparison with the PINN.
+
 ---
 
 ## Plate-with-hole and solid mechanics PINNs (L14, Fri Oct 2)
@@ -57,6 +66,16 @@ Read it before Task 1a. Min's notebook uses plane-stress constants; the port, th
 ### [Optional] Henkes, Wessels & Mahnken, *Physics informed neural networks for continuum micromechanics*, Comput. Methods Appl. Mech. Eng. 393, 114790, 2022.
 
 Extension to micromechanics; useful breadth.
+
+### [Optional] `module_3/readings/moose_plate_walkthrough.md`
+
+How Lab 3's MOOSE reference is built and run:
+- why its input file writes only three of the ten conditions (the rest are natural);
+- the input file, block by block;
+- a coarse run as a job (`run_plate_reference.sbatch`);
+- extracting the fields with `extract_moose_reference.py`.
+
+Read it before Task 2. You do not need to run MOOSE for the lab: the reference is shared.
 
 ---
 
@@ -122,7 +141,7 @@ Causal training for time-dependent PINNs (the 2022 arXiv version is titled *Resp
 
 Trick 4 (curriculum learning via network growth).
 
-### [Optional] Steve Sun's *ML for Mechanics* Lecture 7, shown in L17.
+### [Optional] Steve Sun, *Geometric Learning for Solid Mechanics*, Lecture 7 (2023), shown in L17.
 
 The original framing of the four tricks, and the source of Trick 1 (FEM-guided warm-up). Worth it for the historical and cultural context of the field.
 
