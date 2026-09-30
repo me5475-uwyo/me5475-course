@@ -24,7 +24,7 @@ Module 3 is the longest module of the course and the meatiest single topic. By t
 
 **Module deliverable (Lab 3).** The same plate-with-hole problem solved five ways: port + run (Task 1), compare with MOOSE (Task 2), soft vs hard displacement BCs (Task 3), Optuna sweep of PINN hyperparameters (Task 4), and — as a stretch, +20 bonus — the inverse problem with a ten-seed ensemble (Task 5). Plus a reflection. Full handout: `homework/lab_3.md`.
 
-**How the work runs.** Anything that trains a network runs as a submitted batch job, never on the login node: the plate PINNs on a GPU node (`pinn_train.sbatch`, `pinn_optuna_sweep.sbatch`, `pinn_inverse_ensemble.sbatch`), L13's small diffusion PINNs on a CPU node (`pinn_diffusion.sbatch`). Course rule: **at most two of your GPU jobs at a time** — the array scripts enforce it with `%2`.
+**How the work runs.** Anything that trains a network runs as a submitted batch job, never on the login node: the plate PINNs on a GPU node (`pinn_train.sbatch`, `pinn_optuna_sweep.sbatch`, `pinn_inverse_ensemble.sbatch`), L13's small diffusion PINNs on a CPU node (`pinn_diffusion.sbatch`). MOOSE runs as a CPU job too (`run_moose_diffusion.sbatch`, `run_plate_reference.sbatch`). Course rule: **at most two of your GPU jobs at a time** — the array scripts enforce it with `%2`.
 
 ---
 
@@ -37,12 +37,16 @@ module_3/
 │   ├── pinn_diffusion_1d.py                  L13 demo: 1-D steady diffusion
 │   ├── pinn_diffusion_2d.py                  L13 demo: the same PINN in 2-D
 │   ├── pinn_diffusion.sbatch                 SLURM job for the L13 demos: a CPU job (partition mb), no GPU
+│   ├── diffusion_1d.i                        L13's 1-D diffusion problem in MOOSE (Diffusion + BodyForce kernels)
+│   ├── diffusion_2d.i                        the same in 2-D
+│   ├── run_moose_diffusion.sbatch            SLURM job for the two MOOSE diffusion inputs (CPU, seconds)
 │   ├── min_lin_2D_hole_example.ipynb         Min Lin's original notebook (TF backend, outputs cleared)
 │   ├── plate_with_hole_fixed.py              PyTorch port of Min's notebook, soft BCs (Task 1)
 │   ├── plate_with_hole_hard_bc.py            hard-BC ansatz version (Task 3)
 │   ├── plate_with_hole_parametric.py         course port of Min's parametric notebook (arrives with L16)
 │   ├── plate_with_hole_inverse.py            inverse problem: E, nu from displacements + one force (Task 5)
 │   ├── plate_square_hole_reference.i         MOOSE input for the shared reference solution
+│   ├── run_plate_reference.sbatch            SLURM job to run it yourself (coarse mesh by default)
 │   ├── extract_moose_reference.py            samples the shared MOOSE reference on a grid or at random points
 │   ├── pinn_train.sbatch                     SLURM job for one PINN training (Tasks 1, 3)
 │   ├── pinn_optuna_sweep.py                  Optuna objective for the PINN sweep (Task 4)
@@ -56,6 +60,8 @@ module_3/
     ├── deepxde_quickstart.md                 DeepXDE in two pages
     ├── pinn_failure_modes.md                 measured failures, the four tricks, and newer ones
     ├── plane_stress_and_plane_strain_primer.md  why Min's notebook (plane stress) and Lab 3 (plane strain) differ
+    ├── moose_diffusion_walkthrough.md        L13's two diffusion problems in MOOSE, and how to run them
+    ├── moose_plate_walkthrough.md            how Lab 3's MOOSE reference is built and run
     └── measured_results.md                   every computed number the readings and lab cite
 ```
 
@@ -82,7 +88,7 @@ module_3/
 | L14 | **Min's notebook (`examples/min_lin_2D_hole_example.ipynb`) on the projector**; walk through every code block; explain the mixed (u, σ) formulation |
 | L15 | Min's geometry with the displacement BCs built into the network output (hard-BC ansatz); compare with soft BCs under the same schedule |
 | L16 | **Min's `2D-Hole-Example-Various-E-Nu-1.ipynb`**; the (x₁, x₂, E, ν) → (u, σ) mapping |
-| L17 | Min's training-loss curves as examples of slow convergence; the four tricks |
+| L17 | Diagnosis first — the course's two measured failures (missing BCs, too few points) — then the four tricks |
 | L18 | Min's parametric setup reframed as an inverse problem: (E, ν) become unknowns, and one force measurement fixes E |
 
 ---
@@ -91,7 +97,7 @@ module_3/
 
 Most of M3 builds directly on Min Lin's 2022 PINN notebooks produced during his graduate research with the instructor (CAMML Lab, UW Mechanical). Where this course extends Min's work — most notably the hard-BC ansatz, the comparison to MOOSE rather than ABAQUS, the Optuna sweep, and the inverse-problem formulation — the underlying PINN code structure is still recognizably Min's.
 
-The four-tricks discussion in L17 adapts Steve Sun's *ML for Mechanics* L7 (with cited modernizations).
+The four-tricks discussion in L17 adapts Steve Sun, *Geometric Learning for Solid Mechanics*, Lecture 7 (with cited modernizations).
 
 ---
 
