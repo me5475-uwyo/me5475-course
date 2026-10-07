@@ -93,13 +93,21 @@ The soft-BC alternative: instead of building the conditions into the output, lea
 
 Builds boundary-condition-satisfying outputs from distance functions, for complex geometries — the general form of the construction L15 applies to the plate's straight edges.
 
+### [Optional] `module_3/readings/pinn_periodic_bc_primer.md`
+
+Periodic boundary conditions, as used in periodic-cell homogenization, built into a PINN through a feature transform layer on the
+*inputs*. It is the counterpart of L15's output transform. It points you to Chapter 5 of Min Lin's PhD dissertation
+(University of Wyoming, 2023) and to the periodic construction in Lu et al. 2021.
+
 ---
 
 ## Parametric PINN and the operator-learning bridge (L16, Wed Oct 7)
 
-### [Primary] Min Lin's parametric notebook, `2D-Hole-Example-Various-E-Nu-1.ipynb`, walked through in L16.
+### [Primary] Min Lin's parametric notebook, `module_3/examples/min_lin_2D_hole_parametric_example.ipynb`, walked through in L16.
 
-The notebook itself is not in your repository; the course's PyTorch port, `module_3/examples/plate_with_hole_parametric.py`, arrives with L16 (Wed Oct 7). Re-read the port after L16: adding E and ν as network inputs — (x₁, x₂, E, ν) instead of (x₁, x₂) — is the conceptual key.
+A course copy, with outputs cleared and contact details removed (TensorFlow backend; read it, you do not need to run it). The course's PyTorch port is `module_3/examples/plate_with_hole_parametric.py`; the notebook's first cell lists the deliberate differences (plane stress vs plane strain, the (E, ν) ranges, soft vs hard displacement conditions). Re-read the port after L16: adding E and ν as network inputs — (x₁, x₂, E, ν) instead of (x₁, x₂) — is the conceptual key.
+
+**Run it yourself (optional; not a Lab 3 task).** From your `module_3/examples/` folder on ARCC, run `sbatch pinn_train.sbatch parametric`. It is a GPU job: about 20 minutes of training on an A30, plus the queue. It writes `plate_with_hole_parametric.png`, the slice plot on L16's slide 13. The right panel should show a similar overall σ₁₁ trend, not identical contours. The left panel plots predicted u₁ on a narrow, automatically scaled colour range. At fixed ν, variation with E is numerical error, because the exact displacement is independent of E. The contour pattern and colour limits can differ between runs. The comparison with MOOSE on slides 11–12 used a separate validation script (`measured_results.md` §9), not a course file.
 
 ### [Primary] Lu, Jin, Pang, Zhang & Karniadakis, *Learning nonlinear operators via DeepONet based on the universal approximation theorem of operators*, Nature Machine Intelligence 3, 218–229, 2021.
 
