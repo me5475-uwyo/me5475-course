@@ -43,7 +43,8 @@ module_3/
 │   ├── min_lin_2D_hole_example.ipynb         Min Lin's original notebook (TF backend, outputs cleared)
 │   ├── plate_with_hole_fixed.py              PyTorch port of Min's notebook, soft BCs (Task 1)
 │   ├── plate_with_hole_hard_bc.py            hard-BC ansatz version (Task 3)
-│   ├── plate_with_hole_parametric.py         course port of Min's parametric notebook (arrives with L16)
+│   ├── min_lin_2D_hole_parametric_example.ipynb  Min Lin's parametric notebook (TF backend, outputs cleared; L16)
+│   ├── plate_with_hole_parametric.py         course port of Min's parametric notebook (L16)
 │   ├── plate_with_hole_inverse.py            inverse problem: E, nu from displacements + one force (Task 5)
 │   ├── plate_square_hole_reference.i         MOOSE input for the shared reference solution
 │   ├── run_plate_reference.sbatch            SLURM job to run it yourself (coarse mesh by default)
