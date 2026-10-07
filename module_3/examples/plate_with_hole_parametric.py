@@ -5,8 +5,8 @@ plate_with_hole_parametric.py
 Module 3 / Lecture 16 -- Parametric PINN. One trained network
 solves the plate-with-hole problem for any (E, nu) in a specified range.
 
-PyTorch-backend port of Min Lin's 2022 parametric notebook (2D-Hole-Example-Various-E-Nu-1,
-TF backend; not in the student repository).
+PyTorch-backend port of Min Lin's 2022 parametric notebook (TF backend; course copy:
+module_3/examples/min_lin_2D_hole_parametric_example.ipynb).
 
 Differences from plate_with_hole_fixed.py:
   - Network input is (x_1, x_2, E, nu) -- 4 inputs, not 2.
@@ -30,7 +30,7 @@ Acknowledgments: PINN structure follows Min Lin's 2022 notebook with TF -> PyTor
 
 Usage
 -----
-    python plate_with_hole_parametric.py
+    sbatch pinn_train.sbatch parametric   # GPU job, ~20 min on an A30 (sec. 9); writes the .png and .pt*
 """
 
 from __future__ import annotations
