@@ -137,7 +137,10 @@ both (force measurement 1.06876 vs reference 1.07345), Adam 30 000 + L-BFGS, ARC
 | **4 000 (shipped)** | 18957700 | 9 min 05 s | **1.3e-4** | **0.9992** | **0.2949** |
 
 Two more seeds, 2026-09-26, through `pinn_inverse_ensemble.sbatch` (`--array=1-2`, job 19273831),
-each with its own 20 measurement points, noise draws, collocation points and initial weights:
+each with its own 20 measurement points, noise draws, initial weights and boundary training points. The 4 000 interior
+collocation points are the same at every seed: DeepXDE 1.15's default Hammersley sampler is deterministic, and about
+half of the 600 boundary points are shared between seeds (2026-10-03 sampling check, no training;
+`team/reviews/2026-10-03_L18_prep_evidence/sampling_check/`):
 
 | seed | wall | final test loss | E | ν |
 |---|---|---|---|---|
@@ -428,3 +431,58 @@ relative L2 size is ‖σ₃₃‖/‖σ₁₁‖ = 0.301.
   The largest pointwise |σ_ps − 0.91 σ_pe| is 8.5e-8, against field maxima of 0.90–3.20. This came from `scaled_residual.py` on the saved grids (arithmetic on a login node, no new solve); its output is in the evidence folder. The reaction ratio, 0.9100002, is likewise within numerical error of 0.91.
 - **The displacements do change.** The relative L2 difference in u₂ is 29 %, because the effective
   Poisson ratio is 0.3 in plane stress and 0.43 in plane strain.
+
+---
+
+## 9 · Parametric PINN — one network for E ∈ [0.5, 2], ν ∈ [0.2, 0.4] (for L16)
+
+**Script.** `module_3/examples/plate_with_hole_parametric.py`, as fixed on 2026-09-27. Before that it had never
+run: building the problem crashed with 4-D points on a 2-D geometry (smoke-test job 19577429). The fixed
+version works like this:
+- DeepXDE is given a 4-D Hypercube over (x₁, x₂, E, ν), as in Min Lin's parametric notebook.
+- The 8 000 + 1 500 anchor points are sampled on the 2-D plate. Boundary samples that DeepXDE places inside
+  the removed hole are dropped.
+- The displacement BCs are hard; seven traction terms are in the loss.
+- Plane strain; Adam 100 000 (lr 1e-3), then L-BFGS; seed 42.
+
+**Training.** ARCC job 19577444, A30 `mba30-001`: Adam 988 s, then L-BFGS 168 s (9 266 steps); final summed
+training loss 2.6e-5. Evidence: `team/reviews/2026-09-27_L16_parametric_evidence/`.
+
+**References.** The shared plane-strain MOOSE input at E = 1, for ν = 0.2 (job 19577431_0), 0.3 (§1) and 0.4
+(job 19577431_1), all on the same mesh and the same 200 × 200 grid. For another E, the stresses are multiplied
+by E. That is exact here: the loading is a prescribed displacement, so u does not depend on E and σ scales with
+E.
+
+**An exact check across ν.** For this plate the plane-strain stresses are σ(E, ν) = E/(1 − ν²) · Σ(x), with a
+single field Σ. This is the plane-strain counterpart of §8.
+- The MOOSE runs agree: ‖σ(ν) − (0.91/(1 − ν²)) σ(0.3)‖ / ‖σ(0.3)‖ ≤ 4.3e-8 for every in-plane component.
+- The displacements do depend on ν: the relative L2 difference in u₂ from ν = 0.3 is 0.40 at ν = 0.2 and 0.54
+  at ν = 0.4.
+- **Consequence:** σ₁₁(0, 0.1)·(1 − ν²)/E is one constant for every (E, ν). That independence is exact; the
+  constant's value is a MOOSE estimate, ≈ 2.9500 (§8's plane-stress value). MOOSE gives 2.95002 at all nine
+  points below.
+
+| E | ν | u₁ | u₂ | σ₁₁ | σ₂₂ | σ₁₂ | σ₁₁(0, 0.1): PINN / MOOSE | σ₁₁(0, 0.1)·(1 − ν²)/E, PINN |
+|---|---|---|---|---|---|---|---|---|
+| 0.5 | 0.2 | 1.9e-3 | 1.1e-2 | 6.0e-3 | 0.110 | 0.064 | 1.488 / 1.536 | 2.858 (−3.1 %) |
+| 1.0 | 0.2 | 7.7e-4 | 5.4e-3 | 2.1e-3 | 0.038 | 0.021 | 3.052 / 3.073 | 2.930 (−0.7 %) |
+| 2.0 | 0.2 | 7.0e-4 | 1.9e-3 | 2.4e-3 | 0.023 | 0.015 | 6.174 / 6.146 | 2.964 (+0.5 %) |
+| 0.5 | 0.3 | 1.2e-3 | 3.8e-3 | 4.9e-3 | 0.072 | 0.045 | 1.603 / 1.621 | 2.917 (−1.1 %) |
+| 1.0 | 0.3 | 5.6e-4 | 2.5e-3 | 1.6e-3 | 0.026 | 0.017 | 3.244 / 3.242 | 2.952 (+0.1 %) |
+| 2.0 | 0.3 | 4.6e-4 | 1.9e-3 | 1.7e-3 | 0.022 | 0.015 | 6.493 / 6.484 | 2.954 (+0.1 %) |
+| 0.5 | 0.4 | 6.4e-4 | 3.5e-3 | 8.6e-3 | 0.116 | 0.053 | 1.785 / 1.756 | 2.998 (+1.6 %) |
+| 1.0 | 0.4 | 4.2e-4 | 1.1e-3 | 2.0e-3 | 0.024 | 0.017 | 3.536 / 3.512 | 2.970 (+0.7 %) |
+| 2.0 | 0.4 | 9.4e-4 | 2.0e-3 | 3.1e-3 | 0.037 | 0.019 | 6.936 / 7.024 | 2.913 (−1.3 %) |
+
+The field columns are relative L2 errors on the grid.
+
+**Reading.** One network covers the whole range.
+- **The middle and the stiff end are best.** At (1, 0.3), σ₁₁ at the hole top is within 0.1 %, and u and σ₁₁ are
+  comparable to the single-(E, ν) runs of §6. (2, 0.3) is as good or slightly better in the field errors.
+- **The errors grow at small E**, where the stresses are smallest. That is consistent with the absolute, not
+  relative, loss: its stress terms scale with E², so the same relative error costs less at small E. This one run
+  does not isolate that cause, and whether reweighting helps here is unmeasured. σ₂₂, which is small
+  everywhere, is the worst field (up to 12 %).
+- **The network is not told the scaling law.** It reproduces the invariant to within −3.1 % … +1.6 %.
+  One seed and one training run: a validation, not a study.
+- **Superseded run:** job 19577437 was cancelled; its point filter dropped genuine arc points (float32 tolerance).
