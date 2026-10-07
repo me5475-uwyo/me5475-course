@@ -31,15 +31,20 @@ Loss low, but the answer disagrees with an independent reference?
    YES -> Count the BCs (measured failure 1); check the PDE residual line by line;
           run the physics-police checks in module_3/homework/starter_prompts.md.
 
-Loss plateaus high; ℒ_BC dominates?
+Loss plateaus; an unweighted BC term stays above its own tolerance, and the
+BC values themselves (checked on fresh edge points) confirm it?
    YES -> Mode B (Solid BC violation). Apply: hard-BC ansatz (L15) if the violated
           terms are displacement conditions; Trick 2 (loss weights); Trick 3 (PCGrad).
 
-Loss plateaus high; ℒ_PDE dominates?
+Loss plateaus; the unweighted PDE terms stay above their own tolerance, and the
+field disagrees with an independent reference?
    YES -> Mode A (Stalled). Apply: Trick 1 (FEM-guided warm-up) OR Trick 4 (Net2Net).
 
-Loss plateaus at a small but non-negligible value, terms balanced?
-   YES -> Mode D (Capacity bottleneck). Bigger network + Trick 4 to train it.
+Every term stalls a little above its tolerance -- no single term to blame?
+   YES -> Mode D (possible capacity limit). Try a larger model + Trick 4 to train it.
+
+(A ratio of two loss terms is not a diagnosis -- judge each unweighted term
+ against its own tolerance, and confirm with an independent error. L12.)
 
 Gradient inner products g_i . g_j consistently negative?
    YES -> Mode C (Gradient interference). Apply: Trick 3 (PCGrad).
@@ -68,13 +73,13 @@ def total_loss(step, fade_steps):
     return loss_pde + loss_bc + lambda_fem * loss_fem
 ```
 
-In DeepXDE the FE data enters as `PointSetBC` terms, and loss weights are fixed at `compile`. To fade them, train in chunks and re-`compile` with a smaller λ_FEM between chunks — each `compile` builds a fresh optimizer, so Adam's running averages restart.
+In DeepXDE the FE data enters as `PointSetBC` terms. The course's PyTorch backend reads the loss weights each time it evaluates the loss, so a callback can fade λ_FEM during training without re-compiling. Alternatively, train in chunks and re-`compile` with a smaller λ_FEM between chunks; compiling with a fresh `"adam"` optimizer resets Adam's running averages.
 
 **When to use.** Mode A (stalled convergence), when a coarse FE solve is cheap.
 
-**Two cautions for Lab 3.** Lab 0's MOOSE model is a *different problem* (a quarter annulus with a traction load), so its output cannot warm up the plate PINN; the plate's own FE input is `module_3/examples/plate_square_hole_reference.i`. And if you warm up from the same reference you then score against (Task 2), the comparison is no longer independent — use a coarser mesh, and say so. `plate_with_hole_fixed.py --use-fem-warmup` is a stub: it prints a message and trains normally.
+**Two cautions for Lab 3.** Lab 0's MOOSE model is a *different problem* (a quarter annulus with a traction load), so its output cannot warm up the plate PINN; the plate's own FE input is `module_3/examples/plate_square_hole_reference.i`. And if you warm up from the same reference you then score against (Task 2), the comparison is no longer independent, and a coarser mesh does not fix that (§1: even the coarsest mesh agrees with the finest to 9.4e-6 in u). Say so plainly in your report. `plate_with_hole_fixed.py --use-fem-warmup` is a stub: it prints a message and trains normally.
 
-**Source.** Steve Sun's *ML for Mechanics* L7, as adapted in L17. We have not verified a journal paper for this exact fading recipe.
+**Source.** Steve Sun, *Geometric Learning for Solid Mechanics*, Lecture 7 (2023), as adapted in L17. We have not verified a journal paper for this exact fading recipe.
 
 ---
 
@@ -88,15 +93,19 @@ In DeepXDE the FE data enters as `PointSetBC` terms, and loss weights are fixed 
 # Do NOT make the λ_k an nn.Parameter trained by the optimizer: dℒ/dλ_k = ℒ_k >= 0, so
 # gradient descent drives every weight to zero and then negative. Update them by a rule.
 lambdas = torch.ones(n_terms)                       # λ_k, one per loss term
+params = list(net.parameters())                     # a list: a generator would be used up after one term
 
-def weighted_loss(losses):                          # losses: 1-D tensor of the ℒ_k
-    return (lambdas * losses).sum()
+def flat_grad(L, params):                           # one term's gradient, as one long vector
+    # allow_unused: a term need not depend on every parameter -- a momentum residual (derivatives of
+    # the outputs in x) never sees the output layer's bias. Its gradient there is zero, not an error.
+    gs = torch.autograd.grad(L, params, retain_graph=True, allow_unused=True)
+    return torch.cat([(torch.zeros_like(p) if g is None else g).flatten() for g, p in zip(gs, params)])
+
+def weighted_loss(losses):                          # losses: the ℒ_k, a list or a 1-D tensor
+    return (lambdas * torch.stack(list(losses))).sum()
 
 def rebalance(losses, params, alpha=0.5):           # call every ~100 steps (rule of thumb)
-    norms = torch.stack([
-        torch.cat([g.flatten() for g in torch.autograd.grad(L, params, retain_graph=True)]).norm()
-        for L in losses
-    ])                                              # gradient norm of each term
+    norms = torch.stack([flat_grad(L, params).norm() for L in losses])   # gradient norm of each term
     target = norms.mean() / (norms + 1e-12)         # small-gradient terms get larger weights
     lambdas.mul_(1 - alpha).add_(alpha * target)    # smoothed update
 ```
@@ -118,10 +127,8 @@ The static alternative is to tune one weight: Lab 3 Task 4's sweep searches `bc_
 **Implementation pattern** (needs your own PyTorch training loop around the network: DeepXDE's `train` sums the terms before `backward`).
 
 ```python
-def pcgrad_step(losses, params, optimizer):
-    # one flattened gradient per loss term
-    grads = [torch.cat([g.flatten() for g in torch.autograd.grad(L, params, retain_graph=True)])
-             for L in losses]
+def pcgrad_step(losses, params, optimizer):         # params: a list; flat_grad as in Trick 2
+    grads = [flat_grad(L, params) for L in losses]   # one flattened gradient per loss term
     projected = []
     for i, g_i in enumerate(grads):
         g = g_i.clone()
@@ -150,7 +157,7 @@ def pcgrad_step(losses, params, optimizer):
 
 ## Trick 4 — Net2Net curriculum
 
-**The intuition.** The plate network — 6 hidden layers of width 50, 2 inputs, 5 outputs — has P = 13 155 parameters (arithmetic, not a measurement). From a random start the optimizer may not find a good basin. Start small (L17's example: 2 hidden layers of width 25, P = 855), train, then *inject* capacity (Net2WiderNet or Net2DeeperNet) while preserving the function, and continue training.
+**The intuition.** The plate network — 6 hidden layers of width 50, 2 inputs, 5 outputs — has P = 13 155 parameters (arithmetic, not a measurement). From a random start the optimizer may not find a good basin. Start small (L17's example: 2 hidden layers of width 25, P = 855), train, then *inject* capacity and continue training. Net2WiderNet preserves the function exactly (below). Net2DeeperNet's identity-initialised layer preserves it only when the activation satisfies φ(φ(v)) = φ(v), as ReLU does. For the plate's tanh it is a close start, not an exact copy (tanh(1) = 0.762, tanh(tanh(1)) = 0.642).
 
 **Implementation pattern.** Net2WiderNet, doubling a hidden layer of width n. In PyTorch an `nn.Linear` weight has shape (out, in) — rows are where you are going, as in L7's W^(ℓ) ∈ ℝ^{n_ℓ × n_{ℓ−1}}.
 
@@ -161,9 +168,9 @@ b_new = torch.cat([b, b], dim=0)                            # (2n,)
 W_next_new = torch.cat([W_next / 2, W_next / 2], dim=1)     # (n_next, 2n): each copy carries half
 ```
 
-The function is exactly preserved: the widened layer outputs every activation twice, and the next layer adds the two halves back together. Exact copies receive identical gradients and would stay identical, so add a little noise to the new weights to break the symmetry (*rule of thumb*).
+Before any noise, the function is exactly preserved: the widened layer outputs every activation twice, and the next layer adds the two halves back together. Exact copies receive identical gradients and would stay identical, so add a little noise to the new weights to break the symmetry (*rule of thumb*). That perturbation makes the preservation approximate.
 
-**When to use.** Mode D (capacity bottleneck), when you've tried Tricks 1–3 and still can't get below some accuracy floor.
+**When to use.** Mode D (a possible capacity limit), when you've tried Tricks 1–3 and still can't get below some accuracy floor.
 
 **Reference.** Chen, Goodfellow & Shlens, *Net2Net: Accelerating learning via knowledge transfer*, ICLR 2016.
 
