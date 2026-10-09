@@ -486,3 +486,58 @@ The field columns are relative L2 errors on the grid.
 - **The network is not told the scaling law.** It reproduces the invariant to within −3.1 % … +1.6 %.
   One seed and one training run: a validation, not a study.
 - **Superseded run:** job 19577437 was cancelled; its point filter dropped genuine arc points (float32 tolerance).
+
+## 10 · FE model updating — E and ν by Levenberg–Marquardt around MOOSE (for the FEMU walkthrough)
+
+`fe_model_updating.py` (SHA-256 `207a0a7a…`) via `fe_model_updating.sbatch` (`447e22cd…`), ARCC partition `mb`,
+1 core, 2026-10-09; the course MOOSE build `rom_opt-opt`; input `plate_square_hole_reference.i` (`3f8f4c93…`)
+changed only by command-line overrides. Data: the same `measurements.csv` (`d42bc033…`) and the same per-seed draws
+as §4. The script reprints §4's force measurements: 1.06876 (seed 0), 1.07403 (seed 1) and 1.08040 (seed 2).
+Misfit: 40 displacement entries plus 1 force entry, each divided by 1 % of the largest measured |u| or of the
+measured force (plug-in noise levels, held fixed during the fit). Start (0.5, 0.25); `scipy.optimize.least_squares(method="lm")`, finite-difference sensitivities. The
+inversion mesh is 24/48 unless stated; the data came from 192/384 (§1).
+
+| run | job | E | ν | local s.e. E / ν | MOOSE solves | job time |
+|---|---|---|---|---|---|---|
+| seed 0 | 24428152 | 0.9988 | 0.2953 | 0.0101 / 0.0018 | 17 | 1 min 05 s |
+| seed 1 | 24428153 | 1.0002 | 0.3006 | 0.0101 / 0.0017 | 17 | 56 s |
+| seed 2 | 24428154 | 1.0089 | 0.2964 | 0.0102 / 0.0022 | 17 | 56 s |
+| seed 0, 48/96 mesh | 24428155 | 0.9987 | 0.2953 | 0.0101 / 0.0018 | 17 | 3 min 25 s |
+| seed 0, displacements only | 24428146 | — | — | — | 3 | 15 s |
+
+- **Displacements only:** the local sensitivity screen at the start point (0.5, 0.25), with forward-difference step
+  1e-4 and relative threshold 1e-6, gives singular values 499 and 2.9e-10 for the weighted sensitivities. The
+  insensitive direction is (dE, dν) = (1, −2e-13), so the script stops without optimizing. This is a local,
+  first-order diagnostic; that E is invisible here follows from the physics (L18 slide 5), which the screen agrees
+  with.
+- **Local s.e.:** √diag((JᵀJ)⁻¹) at the solution, conditional on the plug-in weights and the measured locations. It
+  excludes noise-scale estimation, point selection, model discrepancy and optimization variability.
+- **Against §4's PINN, seed by seed:** E differs by 0.0004 / 0.0003 / 0.0005 and ν by 0.0004 / 0.0001 / 0.0004.
+- **Job time** is SLURM's `Elapsed` for the whole job, start-up included. Each seed's 17 solves include the two of the
+  screen.
+- **Superseded:** jobs 24428141, 24428143, 24428144 and 24428145 ran the script before the identifiability check was
+  added. They gave the same E and ν with 15 solves. The table's runs used script `207a0a7a…`; see below for the revised
+  script. Jobs 24428139 and 24428140 failed on a number-formatting bug
+  (`np.float64(…)` passed to MOOSE), and job 24428142 stepped to E < 0 without the check.
+- **Evidence:** `team/reviews/2026-10-09_femu_evidence/` (logs, result JSON, input hashes).
+
+**Revised script, 2026-10-09 (after the Reviewer's REVISE).** `fe_model_updating.py` `ed31683a…` with
+`fe_model_updating.sbatch` `5a21eaa9…`. The changes: run isolation, the local-screen wording, optimizer-failure
+handling and the physical ν range. The measurement draw, forward call and residuals are unchanged (Reviewer AST
+check), and the objective and solver settings are the same, so the table above stands as evidence for them. Smoke runs:
+
+| run | job | account / partition | E | ν | local s.e. E / ν | MOOSE solves | job time |
+|---|---|---|---|---|---|---|---|
+| seed 0 | 24429484 | camml-hyena / inv-camml | 0.9988 | 0.2953 | 0.0101 / 0.0018 | 17 | 1 min 51 s |
+| seed 0, at the same time in the same folder | 24429485 | camml-hyena / inv-camml | 0.9988 | 0.2953 | 0.0101 / 0.0018 | 17 | 1 min 51 s |
+| seed 0, displacements only | 24428799 | me5475 / mb | — (screen stops) | — | — | 3 | 25 s |
+
+- **Isolation:** 24429484 and 24429485 ran at the same time in one folder holding `femu_runs/SENTINEL_do_not_delete`.
+  Each wrote its own `femu_seed0_u_and_F_24x48_<jobid>.json`. The sentinel survived, and no run folder was left.
+- **Cost on this node:** `inv-camml` was slower than `mb`: 100 s in MOOSE runs (5.9 s per solve), against 59 s (3.5 s)
+  for job 24428152. Peak memory per solve was 0.56 GB (sacct MaxRSS), within the wrapper's 2 GB.
+- **Superseded:** jobs 24428797 and 24428798 (on `mb`) were canceled 37 s in by the Co-Worker, by mistake. Each
+  left its own run folder (a killed job cannot clean up); the folders were removed by hand.
+- **Shipped files** differ from the tested ones only in comments (a note that a killed job leaves its folder behind,
+  and the 0.56 GB memory figure): script `f33b582f…`, sbatch `77b5b2f7…`.
+- **Evidence:** `team/reviews/2026-10-09_femu_evidence/recheck/`.
