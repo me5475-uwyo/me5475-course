@@ -44,3 +44,30 @@ All produced 2026-09-01 on ARCC (/project/me5475/envs/ml4sm, torch 2.5.1+cu121; 
   cross-section shear rotation Timoshenko allows, while shear flexibility softens it relative to EB.
 - max von Mises 2.2950e-04 at the clamped corners; zero near free end and neutral axis
 - figure: figures/beam_contours.png (|u|, stress_xx antisymmetric about mid-plane, strain_xx, von Mises)
+
+## E · The course MOOSE build change (2026-10): old vs new executable on the course inputs
+
+`[fallback]` Co-Worker, 2026-10-03/04. The new course build is `/project/me5475/software/moose_torch/me5475/me5475-opt`
+(SHA-256 `083a3c61…ec14`; MOOSE 437fbe5082, libMesh f8a1758, PETSc 0bd50eb, plus libtorch 2.5.1). The old one is
+`/project/me5475/software/rom_opt_arcc/rom_opt-opt` (the same MOOSE, libMesh and PETSc versions).
+
+- **Job:** 22969006 (2026-10-03, `mb`, 4 MPI ranks). Both executables ran with the course job-script runtime block, each
+  with its own library-path line.
+- **Inputs (8):**
+  - `cantilever_beam.i`, `plate_with_hole.i` (M0);
+  - `single_element_loadsweep.i` (M1);
+  - `diffusion_1d.i`, `diffusion_2d.i`, `plate_square_hole_reference.i` (M3);
+  - `j2_cyclic_loading.i` (M4);
+  - `rve_homogenization.i` (M6).
+
+  Each was run at its default settings.
+- **Compared:** every CSV each run writes (postprocessor tables and line-sampler files): the same file names, the same
+  columns and rows, finite values. Two line-sampler files written before the first solve are header-only in both runs.
+- **Result:** all 8 inputs pass. Every compared value is identical, or within 1e-12 absolute (the comparison
+  tolerance is 1e-9 relative, with a 1e-12 absolute floor for round-off near zero).
+- **Not compared:** Exodus field files, non-default parameters, and anything outside these eight inputs. The full Lab 4
+  dataset regeneration is a separate check (`module_4/readings/measured_results.md` §1.2, job 22941265).
+- **Run time:** the new executable takes about 1 s longer to start (it loads the PyTorch library;
+  `module_4/readings/measured_results.md` §1.2). Single short runs here took 2.3–3.9 s against 2.0–3.2 s; the
+  4-rank plate reference took 161.9 s against 170.2 s.
+- **Evidence:** `team/arcc_build/evidence/tests-22969006.out`, which also holds the neural-network material checks.
