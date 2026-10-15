@@ -1,6 +1,6 @@
 # PINN Failure Modes — The Four Tricks Reference
 
-*Module 3. The reference for Lecture 17 (Fri Oct 9), and for Lab 3 (due Mon Oct 19) whenever a PINN will not train — or trains beautifully and is wrong. Runnable companions: `module_3/examples/plate_with_hole_fixed.py` and `plate_with_hole_hard_bc.py`; the trick snippets below are patterns to adapt, not course scripts.*
+*Module 3. The reference for Lecture 17 (Wed Oct 14), and for Lab 3 (due Mon Oct 19) whenever a PINN will not train — or trains beautifully and is wrong. Runnable companions: `module_3/examples/plate_with_hole_fixed.py` and `plate_with_hole_hard_bc.py`; the trick snippets below are patterns to adapt, not course scripts.*
 
 A consolidated reference for L17. Measured numbers cite `module_3/readings/measured_results.md` by section; anything marked *rule of thumb* was not measured in this course, and **none of the four tricks has been measured on the plate problem (not measured).**
 
@@ -14,7 +14,7 @@ Before reaching for a trick, rule these out. Both happened on the Lab 3 plate, a
 
 **1. The problem was posed wrong.** An earlier port of Min's notebook dropped the three σ₁₂ = 0 conditions on the left, bottom and right edges. With the same training budget it reached essentially the same training loss as the corrected script (7.3e-6 against 6.6e-6) — and a displacement error of 0.597 against 1.20e-3, with σ₁₁ near the top of the hole at 0.063 instead of 3.100 (`measured_results.md` §2). **A small PINN loss does not certify that the problem was posed right.** Check: count your boundary conditions (the plate has ten — two per edge, two on the hole), and compare with an independent reference (Lab 3 Task 2).
 
-**2. Too few collocation points.** With 1 500 + 300 points the hard-BC PINN fitted its fixed training points and oscillated between them: training loss 8.3e-7, test loss 7.7, displacement error 4.8e-2. Resampling the points every 1 000 Adam steps helped but was not enough (test loss 0.93, error 1.8e-2 — L-BFGS then refits one fixed set). With 4 000 + 600 points the same script reached test loss 1.9e-5 and error 1.04e-3 (`measured_results.md` §3). That is what worked in the measured run, not a proof of the minimum you need. **Symptom: test loss far above training loss.** The PDE part of DeepXDE's test loss uses separately sampled points; its BC part reuses the training boundary points, so check boundary conditions on fresh points yourself.
+**2. Too few collocation points.** With 1 500 + 300 points the hard-BC PINN fitted its fixed training points and oscillated between them: training loss 8.3e-7, test loss 7.7, displacement error 4.8e-2. A run with DeepXDE's resampler every 1 000 Adam steps reached test loss 0.93 (error 1.8e-2), but it is not a test of refreshing the interior collocation points: with the default `train_distribution="Hammersley"`, the resampler redraws the same interior points (only part of the boundary-location portion of the PDE training set changes, and the BC-loss points stay fixed). To refresh the interior, build `dde.data.PDE` with `train_distribution="pseudo"` and keep the periodic callback; on the plate that is not measured. With 4 000 + 600 points the same script reached test loss 1.9e-5 and error 1.04e-3 (`measured_results.md` §3). That is what worked in the measured run, not a proof of the minimum you need. **Symptom: test loss far above training loss.** The PDE part of DeepXDE's test loss uses separately sampled points; its BC part reuses the training boundary points, so check boundary conditions on fresh points yourself.
 
 ---
 
@@ -122,7 +122,7 @@ The static alternative is to tune one weight: Lab 3 Task 4's sweep searches `bc_
 
 ## Trick 3 — Gradient surgery / PCGrad
 
-**The intuition.** Two loss terms may have gradients that conflict — improving one drives the other up — and the summed gradient is partly cancelled. PCGrad removes the conflicting component: whenever gᵢ · gⱼ < 0, project gᵢ onto the plane normal to gⱼ.
+**The intuition.** Two loss terms may have gradients that conflict — improving one drives the other up — and the summed gradient is partly canceled. PCGrad removes the conflicting component: whenever gᵢ · gⱼ < 0, project gᵢ onto the plane normal to gⱼ.
 
 **Implementation pattern** (needs your own PyTorch training loop around the network: DeepXDE's `train` sums the terms before `backward`).
 
@@ -157,7 +157,7 @@ def pcgrad_step(losses, params, optimizer):         # params: a list; flat_grad 
 
 ## Trick 4 — Net2Net curriculum
 
-**The intuition.** The plate network — 6 hidden layers of width 50, 2 inputs, 5 outputs — has P = 13 155 parameters (arithmetic, not a measurement). From a random start the optimizer may not find a good basin. Start small (L17's example: 2 hidden layers of width 25, P = 855), train, then *inject* capacity and continue training. Net2WiderNet preserves the function exactly (below). Net2DeeperNet's identity-initialised layer preserves it only when the activation satisfies φ(φ(v)) = φ(v), as ReLU does. For the plate's tanh it is a close start, not an exact copy (tanh(1) = 0.762, tanh(tanh(1)) = 0.642).
+**The intuition.** The plate network — 6 hidden layers of width 50, 2 inputs, 5 outputs — has P = 13 155 parameters (arithmetic, not a measurement). From a random start the optimizer may not find a good basin. Start small (L17's example: 2 hidden layers of width 25, P = 855), train, then *inject* capacity and continue training. Net2WiderNet preserves the function exactly (below). Net2DeeperNet's identity-initialized layer preserves it only when the activation satisfies φ(φ(v)) = φ(v), as ReLU does. For the plate's tanh it is a close start, not an exact copy (tanh(1) = 0.762, tanh(tanh(1)) = 0.642).
 
 **Implementation pattern.** Net2WiderNet, doubling a hidden layer of width n. In PyTorch an `nn.Linear` weight has shape (out, in) — rows are where you are going, as in L7's W^(ℓ) ∈ ℝ^{n_ℓ × n_{ℓ−1}}.
 
@@ -178,7 +178,7 @@ Before any noise, the function is exactly preserved: the widened layer outputs e
 
 ## Modern tricks (briefly)
 
-**NTK reweighting** (Wang, Yu & Perdikaris, J. Comput. Phys. 449, 2022). Analyse the PINN's gradient flow through the neural tangent kernel and reweight the loss terms to balance its eigenvalues. Mathematically principled; harder to implement. Worth knowing it exists.
+**NTK reweighting** (Wang, Yu & Perdikaris, J. Comput. Phys. 449, 2022). Analyze the PINN's gradient flow through the neural tangent kernel and reweight the loss terms to balance its eigenvalues. Mathematically principled; harder to implement. Worth knowing it exists.
 
 **Causal training** (Wang, Sankaran & Perdikaris, Comput. Methods Appl. Mech. Eng. 421, 2024; arXiv 2022 as *Respecting causality is all you need…*). For *time-dependent* PINNs: weight the residual at time t only once the network has converged at earlier times. Not applicable to Lab 3 (steady plate-with-hole), but relevant to transient final projects.
 
