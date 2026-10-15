@@ -118,13 +118,20 @@ point to the hole top, (0, 0.1005), where MOOSE gives 3.204 (3.2418 exactly at (
 | soft BC, 1 500 (Min's budget) | 18923098 | 8 min 20 s | 6.6e-6 / 1.4e-3 | 1.20e-3 | 3.100 |
 | **soft BC, 4 000** | 18957698 | 10 min 25 s | 8.2e-6 / **1.8e-5** | **6.0e-4** | 3.174 |
 | hard BC, 1 500 | 18923099 | 5 min 48 s | 8.3e-7 / **7.7** | 4.8e-2 | 0.239 |
-| hard BC, 1 500 + resample every 1 000 Adam steps | 18935477 | 7 min 31 s | 9.4e-6 / 0.93 | 1.8e-2 | 2.084 |
+| hard BC, 1 500; resampler every 1 000 steps, same interior points | 18935477 | 7 min 31 s | 9.4e-6 / 0.93 | 1.8e-2 | 2.084 |
 | **hard BC, 4 000** | 18935475 | 8 min 07 s | 9.1e-6 / **1.9e-5** | **1.04e-3** | **3.2015** |
 
 With 1 500 points the hard-BC PINN fits the fixed collocation points and oscillates between them:
 its x-momentum residual on the test points grows from ~1e-3 to 7.5 while the training residual
-falls. The one resampling schedule tried (every 1 000 Adam steps, then L-BFGS on one fixed set) did not
-cure it; the measured 4 000/600 run did (one run — not a minimum adequate count). The shipped scripts now default to 4 000/600 for all four PINN scripts.
+falls. The resampling row is **not a test of refreshing the interior collocation points** (corrected 2026-10-14).
+It used `dde.callbacks.PDEPointResampler(period=1000)` with DeepXDE's default `train_distribution="Hammersley"`,
+which redraws the *same* interior points. A sampling-only check on ARCC (DeepXDE 1.15.0, this geometry, 1 500 + 300,
+no BCs, no training) found the interior 100 % identical after a resample, with 72 % of the boundary-location portion
+of the PDE training set shared; with `"pseudo"`, 0 % of either. The callback leaves the cached BC-loss points fixed,
+and the evidence does not isolate why this run's loss improved. Refreshing the interior needs `train_distribution=
+"pseudo"` in `dde.data.PDE` with the periodic callback kept; whether that cures the 1 500-point failure is (not
+measured). The measured
+4 000/600 run did cure it (one run — not a minimum adequate count). The shipped scripts now default to 4 000/600 for all four PINN scripts.
 
 ## 4 · Inverse PINN — E and ν from displacements plus one force
 
@@ -220,7 +227,7 @@ Script hashes (md5). **Rehearsed** (jobs 19296464/65, `~/me5475-demo/L13-validat
 26f82c161276a1caacccdfa337213d52, a0338ade38951dbec1602b23c5342cae — they differ from the rehearsed files
 **only in comment and docstring lines** (run times worded from this ledger; `tail -F`), checked with `diff`
 on ARCC. Jobs 19291289–19291303 ran an earlier revision that differs only in plot styling (legend position,
-colour-bar ticks); their training numbers are identical to the final revision's, digit for digit.
+color-bar ticks); their training numbers are identical to the final revision's, digit for digit.
 
 ### 7.1 · The two teaching scripts (seed 42, defaults) — ARCC-CPU
 
@@ -485,7 +492,7 @@ The field columns are relative L2 errors on the grid.
   everywhere, is the worst field (up to 12 %).
 - **The network is not told the scaling law.** It reproduces the invariant to within −3.1 % … +1.6 %.
   One seed and one training run: a validation, not a study.
-- **Superseded run:** job 19577437 was cancelled; its point filter dropped genuine arc points (float32 tolerance).
+- **Superseded run:** job 19577437 was canceled; its point filter dropped genuine arc points (float32 tolerance).
 
 ## 10 · FE model updating — E and ν by Levenberg–Marquardt around MOOSE (for the FEMU walkthrough)
 
