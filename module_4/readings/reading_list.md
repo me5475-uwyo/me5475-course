@@ -42,7 +42,7 @@ An early neural network used as an incremental constitutive model inside a finit
 
 ### [Primary] `module_4/readings/frame_indifference_primer.md`
 
-The background for L20 slides 3–5: rotating the axes versus rotating the body, how each deformation and stress measure behaves under a superposed rotation, and why an energy model fed C satisfies frame indifference for any weights (a statement about the scalar energy, not about a network that outputs stress directly). It recaps *Index notation and coordinate transformation* (M1) in four lines and covers only what is new: strain and stiffness in a rotated basis, and the active rotation. Companion: `module_4/examples/frame_indifference_checks.py`.
+The background for L20 slides 3–6: rotating the axes versus rotating the body, how each deformation and stress measure behaves under a superposed rotation, hyperelasticity (stress from a stored energy, with the neo-Hookean example), and why an energy model fed C satisfies frame indifference for any weights (a statement about the scalar energy, not about a network that outputs stress directly). It recaps *Index notation and coordinate transformation* (M1) in four lines and covers only what is new: strain and stiffness in a rotated basis, and the active rotation. Companion: `module_4/examples/frame_indifference_checks.py`.
 
 ### [Optional] Heider, Wang & Sun, *SO(3)-invariance of informed-graph-based deep neural network for anisotropic elastoplastic materials*, CMAME 363, 2020.
 
