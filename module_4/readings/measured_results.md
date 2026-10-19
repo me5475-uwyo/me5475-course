@@ -476,8 +476,8 @@ measured. These are exact tensor operations, rounded for printing, and they back
 - **Where:** the instructor's laptop, in the course demo environment (`~/ME5475-demo-env`): Python 3.9.6, NumPy
   2.0.2, macOS arm64. Cluster job: not applicable.
 - **Command:** `python module_4/examples/frame_indifference_checks.py`. It is deterministic, with no random numbers.
-- **Script:** SHA-256 `23086ca645e3904d6ecb00a1c2b73f8e5e7c4cdf38788777b34dcb3fd4b53fc3` (items 10–11 appended 2026-10-19; items 1–9 and their output are unchanged from the first version, `b8bd7feb…`).
-- **Independent rerun:** the Reviewer reran the first version (items 1–9) on 2026-10-19 and got byte-identical output.
+- **Script:** SHA-256 `c061b83e1f434bccbd50bc81eeff3e830c39f8c38613424f6edadb38fd8560ac`. Items 10–11 and item 12 were appended on 2026-10-19. The output of the earlier items is unchanged: items 1–9 match the first version (`b8bd7feb…`), and items 1–11 match the second (`23086ca6…`).
+- **Independent reruns:** the Reviewer reran the first version (items 1–9) and the second (items 1–11) on 2026-10-19, and got byte-identical output both times.
 - **Inputs, all chosen for illustration:**
   - **Passive rotation:** θ = 30°, with Q_ij = e'_i · e_j, so Q = [[cos θ, sin θ], [−sin θ, cos θ]].
   - **Stress:** σ = [[2, 1], [1, 0]].
@@ -489,6 +489,7 @@ measured. These are exact tensor operations, rounded for printing, and they back
   - **Non-objective energy:** ψ_bad = ½μ |F − I|².
   - **Stress from energy:** P = μ (F − F⁻ᵀ) + λ (ln J) F⁻ᵀ against a central difference of ψ with step 10⁻⁶, at the same F.
   - **Small-strain limit:** F = I + δH with H = [[1, 0.5], [0.2, −0.3]] and δ = 10⁻², 10⁻⁴, against C : ε with ε = sym(δH).
+  - **Left vs right rotation (primer §8 table):** F = diag(1.1, 1), unit fiber direction a = e₁. Left: Q F for Q = 30°, 45°, 90°. Right: F Q for Q = 90° and 180°.
 
 | item | quantity | value |
 |---|---|---|
@@ -503,6 +504,7 @@ measured. These are exact tensor operations, rounded for printing, and they back
 | 9 | small strain under a pure 45° rotation; E; 1° rotation | ε₁₁ = ε₂₂ = −0.2929; E = 0; ε₁₁ = −1.523 × 10⁻⁴ |
 | 10 | neo-Hookean P: formula vs central difference | P = [[0.0965, 0.0769], [0.0688, −0.0127]] both; max difference 3.1 × 10⁻¹¹; equals J σ F⁻ᵀ: true |
 | 11 | relative gap ‖P − C : ε‖ / ‖C : ε‖ for F = I + δH | 1.0 × 10⁻² at δ = 10⁻²; 1.0 × 10⁻⁴ at δ = 10⁻⁴ |
+| 12 | C (diagonal), fiber stretch² a · C a, I₁ for F = diag(1.1, 1), a = e₁ | original: diag(1.21, 1), 1.21, 2.21; Q F at 30°, 45°, 90°: the same; F Q at 90°: diag(1, 1.21), 1.00, 2.21; F Q at 180°: diag(1.21, 1), 1.21, 2.21 |
 
-The full output is in `team/reviews/2026-10-19_L20_fix_evidence/frame_indifference_checks_v2.out` (items 1–9 byte-identical to `frame_indifference_checks.out`).
+The full output is in `team/reviews/2026-10-19_L20_fix_evidence/frame_indifference_checks_v3.out`. Items 1–11 are byte-identical to `frame_indifference_checks_v2.out`, and items 1–9 to `frame_indifference_checks.out`.
 
