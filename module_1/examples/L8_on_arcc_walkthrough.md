@@ -113,7 +113,7 @@ Two things to notice:
   trend obvious through the noise.
 - **Your numbers may differ in the last digits** if you run on your laptop instead. The course
   environment is torch 2.5.1; a different version reorders floating-point operations slightly. The
-  initial loss (`5.589426e-01`) should match exactly, because the seed fixes the initialisation.
+  initial loss (`5.589426e-01`) should match exactly, because the seed fixes the initialization.
 
 **To see the figure:** click `sine_mlp.png` in the VS Code file tree. It opens inline over the SSH
 connection — no X11, no downloading. This is why `sine_mlp.py` pins the `Agg` matplotlib backend:
