@@ -158,7 +158,42 @@ This is L20 slide 6, line by line:
 
 Frame indifference multiplies F on the **left** (the observer, or the rotated body). Material symmetry multiplies on the **right** (the material's own reference directions):
 
-ψ(F H) = ψ(F) for every H in the material's symmetry group.
+ψ(F Q_sym) = ψ(F) for every Q_sym in the material's symmetry group G_sym.
+
+**What Q_sym is.** A rotation of the material's own structure (its fibers, crystal lattice or texture), made in the reference configuration before any deformation, **that leaves the material looking exactly the same**. All such rotations form the symmetry group G_sym ⊂ SO(3) (some texts write H for its members):
+
+- **isotropic:** every rotation;
+- **fibers along e₁** (a unidirectional composite, transversely isotropic): every rotation about e₁, and the 180° rotations about any axis perpendicular to e₁, which reverse the fiber direction (a straight fiber looks the same either way);
+- **cubic crystal:** the 24 rotations that map a cube onto itself;
+- **section 3's orthotropic stiffness:** a 180° rotation is a symmetry (four factors of Q = −I cancel), but 30° is not, since case 3 showed that it changes the components; nor is 90°, which would swap C₁₁₁₁ = 10 and C₂₂₂₂ = 1.
+
+**Where the equation comes from, step by step.**
+
+*Step 1: an energy function belongs to a reference configuration.* ψ(F) is measured from a particular undeformed placement of the body, its reference configuration κ: F = ∂x/∂X, where X labels each particle by its position in κ. Write the energy function as ψ_κ when the reference matters.
+
+*Step 2: rotate the reference.* Take the same undeformed body and rotate the material in it rigidly, before any loading, so that the particle that sat at X now sits at X' = Q X. Call that placement κ'. Its particles are the same particles, unstressed, merely turned.
+
+*Step 3: the same deformation, described from κ'.* Now deform the body so that every particle ends up exactly where it did before, at x = φ(X). In terms of the new labels X = Qᵀ X', so x = φ(Qᵀ X'), and by the chain rule
+
+∂x/∂X' = (∂x/∂X)(∂X/∂X') = F Qᵀ.
+
+So the same physical deformation has gradient F from κ and F Qᵀ from κ'. The rotation multiplies F **from the right**, because it acts on the reference side, X, of F = ∂x/∂X.
+
+*Step 4: the stored energy is a physical quantity.* The energy stored in the deformed body does not depend on which description we use, so ψ_κ'(F Qᵀ) = ψ_κ(F) for every F. This holds for **any** rotation Q. It only says how an energy function changes when the reference is relabeled.
+
+*Step 5: symmetry means the two energy functions are the same function.* If the rotated material in κ' cannot be told apart from the original in κ (same fibers, same lattice, in the same directions), then any experiment from κ' gives the same results as from κ, so ψ_κ' = ψ_κ. Rotations with this property are the material's symmetries. Substituting into step 4 gives
+
+ψ(F Qᵀ) = ψ(F) for every Q in G_sym.
+
+*Step 6: the group property.* If Q₁ and Q₂ are symmetries, so is Q₁Q₂ (do one, then the other), and so is Q₁ᵀ = Q₁⁻¹ (undo it). So the symmetries form a group. Because Qᵀ is in the group whenever Q is, step 5 can be written with Q in place of Qᵀ, which is the form on L20 slide 7: ψ(F Q_sym) = ψ(F).
+
+**In terms of C.** Since C(F Q) = Qᵀ C Q, the condition reads ψ̃(Qᵀ C Q) = ψ̃(C) for every Q in G_sym. The energy cannot tell C apart from C written in rotated material axes.
+
+**In small strain, and the link to section 3.** For ψ = ½ ε : C : ε the condition becomes ψ(Qᵀ ε Q) = ψ(ε) for every ε, which holds exactly when the rotated stiffness equals the original, C' = C. That is what section 3 computed. Case 2 (isotropic, C' = C for any angle) says every rotation is a symmetry. Case 3 (orthotropic, C' ≠ C at 30°) says 30° is not.
+
+**What it means for a model.** An isotropic energy may use only I₁, I₂ and J. A transversely isotropic one with fiber direction a also needs invariants that contain a, for example I₄ = a · C a (the squared fiber stretch) and I₅ = a · C² a. These are unchanged by rotations about a and by a → −a (because Q a = ±a), and in general they change under other rotations. Building such inputs is Way 3 for an anisotropic material (Heider, Wang & Sun 2020).
+
+Compare frame indifference: there Q acts **after** the deformation, holds for **every** rotation, and holds for **every** material. Material symmetry acts **before** it, and holds only for the rotations in this material's group.
 
 - **Isotropic:** every rotation is in the group, so ψ depends only on the invariants of C: I₁ = tr C, I₂ = ½[(tr C)² − tr C²] and J. Case 2 in section 3 is the small-strain version of this: C' = C.
 - **Orthotropic or anisotropic:** only some rotations are in the group, so ψ needs extra structural directions. Case 3 is what happens otherwise: rotating the material directions relative to the load changes the stiffness components.
