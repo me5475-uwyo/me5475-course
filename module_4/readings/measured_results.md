@@ -470,14 +470,14 @@ The independent Reviewer cleared the package on Oct 19 (`2026-10-16_reviewer_con
 
 **Worked arithmetic and transformation checks, not fitted-model performance.** Nothing here is trained or
 measured. These are exact tensor operations, rounded for printing, and they back every number in
-`frame_indifference_primer.md` and on L20 slides 3–4.
+`frame_indifference_primer.md` and on L20 slides 3–5.
 
 - **Run:** 2026-10-19, `[fallback]` Co-Worker (Opus 5.5).
 - **Where:** the instructor's laptop, in the course demo environment (`~/ME5475-demo-env`): Python 3.9.6, NumPy
   2.0.2, macOS arm64. Cluster job: not applicable.
 - **Command:** `python module_4/examples/frame_indifference_checks.py`. It is deterministic, with no random numbers.
-- **Script:** SHA-256 `b8bd7febba8624a49cb6fd071f44a8fc4d7a6c0d295717f883f05436993d562d`.
-- **Independent rerun:** the Reviewer reran it on 2026-10-19 and got byte-identical output.
+- **Script:** SHA-256 `23086ca645e3904d6ecb00a1c2b73f8e5e7c4cdf38788777b34dcb3fd4b53fc3` (items 10–11 appended 2026-10-19; items 1–9 and their output are unchanged from the first version, `b8bd7feb…`).
+- **Independent rerun:** the Reviewer reran the first version (items 1–9) on 2026-10-19 and got byte-identical output.
 - **Inputs, all chosen for illustration:**
   - **Passive rotation:** θ = 30°, with Q_ij = e'_i · e_j, so Q = [[cos θ, sin θ], [−sin θ, cos θ]].
   - **Stress:** σ = [[2, 1], [1, 0]].
@@ -487,6 +487,8 @@ measured. These are exact tensor operations, rounded for printing, and they back
   - **Deformation:** F = [[1.1, 0.2], [0, 0.95]], with a superposed rotation R(45°).
   - **Neo-Hookean energy:** ψ = ½μ (tr C − 2) − μ ln J + ½λ (ln J)², with E = 1, ν = 0.3.
   - **Non-objective energy:** ψ_bad = ½μ |F − I|².
+  - **Stress from energy:** P = μ (F − F⁻ᵀ) + λ (ln J) F⁻ᵀ against a central difference of ψ with step 10⁻⁶, at the same F.
+  - **Small-strain limit:** F = I + δH with H = [[1, 0.5], [0.2, −0.3]] and δ = 10⁻², 10⁻⁴, against C : ε with ε = sym(δH).
 
 | item | quantity | value |
 |---|---|---|
@@ -499,6 +501,8 @@ measured. These are exact tensor operations, rounded for printing, and they back
 | 7 | neo-Hookean ψ(F), ψ(RF) | 0.012956, 0.012956; σ* = R σ Rᵀ, P* = R P, S* = S: true |
 | 8 | ψ_bad(F), ψ_bad(RF) | 0.010096, 0.186638 |
 | 9 | small strain under a pure 45° rotation; E; 1° rotation | ε₁₁ = ε₂₂ = −0.2929; E = 0; ε₁₁ = −1.523 × 10⁻⁴ |
+| 10 | neo-Hookean P: formula vs central difference | P = [[0.0965, 0.0769], [0.0688, −0.0127]] both; max difference 3.1 × 10⁻¹¹; equals J σ F⁻ᵀ: true |
+| 11 | relative gap ‖P − C : ε‖ / ‖C : ε‖ for F = I + δH | 1.0 × 10⁻² at δ = 10⁻²; 1.0 × 10⁻⁴ at δ = 10⁻⁴ |
 
-The full output is in `team/reviews/2026-10-19_L20_fix_evidence/frame_indifference_checks.out`.
+The full output is in `team/reviews/2026-10-19_L20_fix_evidence/frame_indifference_checks_v2.out` (items 1–9 byte-identical to `frame_indifference_checks.out`).
 
