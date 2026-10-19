@@ -84,3 +84,23 @@ E45 = 0.5 * (R.T @ R - np.eye(2))
 R1 = rot(1)
 print("9. a pure 45-degree rotation: small strain eps =", eps45.ravel(), "| Green-Lagrange E =", E45.ravel(),
       "| a 1-degree rotation: eps_11 = %.3e" % (0.5 * (R1 + R1.T) - np.eye(2))[0, 0])
+
+# --- hyperelasticity: the stress is the derivative of the stored energy -----------------------
+def P_formula(F):                               # P = mu (F - F^-T) + lam ln J F^-T
+    FiT = np.linalg.inv(F).T
+    return mu * (F - FiT) + lam * np.log(np.linalg.det(F)) * FiT
+
+
+h, P_fd = 1e-6, np.zeros((2, 2))
+for i in range(2):
+    for j in range(2):
+        dF = np.zeros((2, 2))
+        dF[i, j] = h
+        P_fd[i, j] = (neo_hooke(F + dF)[0] - neo_hooke(F - dF)[0]) / (2 * h)
+print("10. P = d psi / dF: formula", P_formula(F).ravel().round(6), "| central difference", P_fd.ravel().round(6),
+      "| max |difference| = %.1e" % np.abs(P_formula(F) - P_fd).max(), "| equals J sigma F^-T:", np.allclose(P_formula(F), P1))
+H = np.array([[1.0, 0.5], [0.2, -0.3]])
+for d in (1e-2, 1e-4):
+    eps = 0.5 * d * (H + H.T)
+    hooke = np.einsum("ijkl,kl->ij", Ci, eps)
+    print("11. small-strain limit, F = I + %.0e H: |P - C : eps| / |C : eps| = %.1e" % (d, np.linalg.norm(P_formula(np.eye(2) + d * H) - hooke) / np.linalg.norm(hooke)))
