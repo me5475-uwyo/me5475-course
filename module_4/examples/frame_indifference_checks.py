@@ -104,3 +104,15 @@ for d in (1e-2, 1e-4):
     eps = 0.5 * d * (H + H.T)
     hooke = np.einsum("ijkl,kl->ij", Ci, eps)
     print("11. small-strain limit, F = I + %.0e H: |P - C : eps| / |C : eps| = %.1e" % (d, np.linalg.norm(P_formula(np.eye(2) + d * H) - hooke) / np.linalg.norm(hooke)))
+
+# --- material symmetry: Q on the left vs Q on the right (primer section 8 table) --------------
+F12, a = np.diag([1.1, 1.0]), np.array([1.0, 0.0])          # stretch along e1; unit fiber a = e1
+def row(G):
+    C12 = G.T @ G
+    return ([round(float(c), 4) for c in np.diag(C12)], round(float(a @ C12 @ a), 4), round(float(np.trace(C12)), 4),
+            bool(np.allclose(C12, np.diag(np.diag(C12)))))
+print("12. F = diag(1.1, 1), fiber a = e1: (diag C, a.Ca, I1)")
+print("    original F           ", row(F12)[:3])
+print("    Q F, Q = 30/45/90 deg", [row(rot(t) @ F12)[:3] for t in (30, 45, 90)])
+print("    F Q, Q = 90 deg      ", row(F12 @ rot(90))[:3], "| C diagonal:", row(F12 @ rot(90))[3])
+print("    F Q, Q = 180 deg     ", row(F12 @ rot(180))[:3])
