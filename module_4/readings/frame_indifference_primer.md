@@ -1,6 +1,6 @@
 # Rotations, Tensors and Frame Indifference — A Primer for L20
 
-*Course reading · ME 5475 · Module 4 · **[Primary]**, background for L20 (Mon Oct 19), slides 3–5; read it before L21
+*Course reading · ME 5475 · Module 4 · **[Primary]**, background for L20 (Mon Oct 19), slides 3–6; read it before L21
 (Wed Oct 21). Runnable companion: `module_4/examples/frame_indifference_checks.py`, which recomputes every number below
 (NumPy only; worked arithmetic, not a measurement). Its output is recorded in M4 measured results
 (`module_4/readings/measured_results.md`), §8.*
@@ -10,7 +10,8 @@
 - apply the M1 change-of-basis rule to strain without the shear-factor error, and to the 4th-order stiffness;
 - tell a **change of basis** (rotate the axes) from a **superposed rigid rotation** (rotate the deformed body), and say which one frame indifference is about;
 - state how F, C, E, b, J, σ, P, S and the small strain ε each behave under a superposed rotation;
-- read L20 slide 5, ψ(QF) = ψ(F), and explain why an energy model fed C (or its invariants) satisfies it for any weights.
+- say what makes a material hyperelastic, derive the stress from a stored energy, and work the neo-Hookean example;
+- read L20 slide 6, ψ(QF) = ψ(F), and explain why an energy model fed C (or its invariants) satisfies it for any weights.
 
 ---
 
@@ -18,7 +19,8 @@
 
 - **Reading · Index notation and coordinate transformation** (Module 1). Part 2 derived the change-of-basis rule and Part 3 introduced the word "frame indifference". This primer does not repeat them; section 3 recaps them in four lines and adds only the two cases M1 did not work: strain and stiffness.
 - **L6** introduced the deformation gradient F, its polar decomposition, the strain measures ε and E, and the three stress measures σ, P and S. Section 4 collects them in one table.
-- **L19** used "the invariants of C" without saying why C. Sections 5–6 answer that.
+- **L6 and L19** named hyperelasticity (S = 2 ∂ψ/∂C, P = ∂ψ/∂F) without working it. Section 5 does.
+- **L19** used "the invariants of C" without saying why C. Sections 6–7 answer that.
 
 The one new idea is in section 2: there are two different operations that both use an orthogonal matrix, and they are easy to confuse.
 
@@ -67,9 +69,43 @@ The motion maps a reference point X to x = φ(X). The deformation gradient is F 
 | P | J σ F⁻ᵀ | two-point | first Piola–Kirchhoff: force / reference area |
 | S | F⁻¹ P = J F⁻¹ σ F⁻ᵀ | reference | second Piola–Kirchhoff, symmetric |
 
-The work-conjugate pairs are P with Ḟ and S with Ė (the stress power per reference volume is P : Ḟ = S : Ė). For a hyperelastic material with stored energy ψ, P = ∂ψ/∂F and S = 2 ∂ψ/∂C. In small strain all three stresses coincide to first order, which is why Modules 0–3 used σ only.
+The work-conjugate pairs are P with Ḟ and S with Ė (the stress power per reference volume is P : Ḟ = S : Ė). For a hyperelastic material with stored energy ψ, P = ∂ψ/∂F, and, writing ψ(F) = ψ̃(C), S = 2 ∂ψ̃/∂C (section 5). In small strain all three stresses coincide to first order, which is why Modules 0–3 used σ only.
 
-## 5 · Active: what each measure does under a superposed rotation
+## 5 · Hyperelasticity: stress from a stored energy
+
+L6 and L19 named hyperelasticity. This section works it, because the rest of this primer, and L20–L21, are about the constraints a stored energy must satisfy.
+
+**What it is.** A material is **hyperelastic** if there is a stored-energy function ψ(F), the energy per unit reference volume, from which the stress follows by differentiation. Loading and unloading then follow the same path, and the work done on the material is stored, not dissipated: around any closed deformation cycle the net work is zero. Rubber, approximately many soft tissues, and every linear-elastic model in Labs 0–3 are hyperelastic. **Lab 4's J₂ plasticity is not:** its response depends on the loading history through internal variables (L22–L24).
+
+**Why the stress is a derivative.** The stress power per unit reference volume is P : Ḟ (section 4). If all of it is stored, then ψ̇ = P : Ḟ for every deformation rate Ḟ. The chain rule gives ψ̇ = (∂ψ/∂F) : Ḟ, and since Ḟ is arbitrary,
+
+P = ∂ψ/∂F.
+
+If ψ depends on F only through C (section 7 shows that frame indifference requires exactly this), write ψ(F) = ψ̃(C). Then dC = dFᵀ F + Fᵀ dF, and because ∂ψ̃/∂C is symmetric the chain rule gives P = 2 F ∂ψ̃/∂C. So S = F⁻¹ P = 2 ∂ψ̃/∂C, and σ = J⁻¹ P Fᵀ.
+
+**Small strain is the special case you already know.** With ψ = ½ ε : C : ε, the derivative is σ = ∂ψ/∂ε = C : ε, Hooke's law. Every linear-elastic computation in Labs 0–3 was hyperelastic in this sense.
+
+**Isotropic energies** depend only on the invariants of C (section 8): I₁ = tr C, I₂ = ½[(tr C)² − tr C²] and J = det F (the third invariant is I₃ = det C = J²).
+
+**The running example: compressible neo-Hookean.**
+
+ψ = ½μ (I₁ − 3) − μ ln J + ½λ (ln J)².
+
+Using ∂I₁/∂F = 2F and ∂J/∂F = J F⁻ᵀ:
+
+P = μ (F − F⁻ᵀ) + λ (ln J) F⁻ᵀ, and σ = J⁻¹ [μ (b − I) + λ (ln J) I].
+
+- **At F = I,** ψ = 0 and P = 0: the reference state is stress-free.
+- **In small strain,** F = I + H with H small, F⁻ᵀ ≈ I − Hᵀ and ln J ≈ tr H, so P ≈ μ (H + Hᵀ) + λ (tr H) I = 2μ ε + λ (tr ε) I. That is Hooke's law with Lamé constants μ and λ: the two constants mean what they meant in Labs 0–3.
+- **For μ > 0 and λ ≥ 0, as in our course examples,** ψ → +∞ as J → 0⁺: compressing to zero volume costs infinite stored energy. Hyperelasticity alone does not guarantee this barrier.
+
+Mooney–Rivlin adds an I₂ term; Arruda–Boyce and Ogden are other common isotropic forms (L19 lists them). They follow the same pattern.
+
+**Checked in numbers** (companion script, items 10–11; 2-D plane strain, E = 1, ν = 0.3, where the 2-D energy uses tr C − 2). At F = [[1.1, 0.2], [0, 0.95]], the formula for P agrees with a central finite difference of ψ to 3 × 10⁻¹¹ and equals J σ F⁻ᵀ. For F = I + δH, the relative gap between P and C : ε is 1.0 × 10⁻² at δ = 10⁻² and 1.0 × 10⁻⁴ at δ = 10⁻⁴: it shrinks in proportion to the strain, as first-order agreement should.
+
+**What this means for a network.** A neural hyperelastic model learns one scalar ψ_NN and gets the stress by automatic differentiation, which is P = ∂ψ/∂F. That is L21's demo, `icnn_hyperelastic.py`, trained on the neo-Hookean energy above. Two things come for free: the stress is path-independent and dissipation-free by construction, and every requirement on the stress becomes a requirement on one scalar function. The rest of this primer asks which requirements: frame indifference (section 7) and material symmetry (section 8). L21 adds polyconvexity.
+
+## 6 · Active: what each measure does under a superposed rotation
 
 Rotate the deformed body: x* = Q x + c, with Q a rotation. Then F* = Q F, and each measure follows from its definition:
 
@@ -84,9 +120,11 @@ Rotate the deformed body: x* = Q x + c, with Q a rotation. Then F* = Q F, and ea
 | σ | Q σ Qᵀ | a physically objective stress rotates with the body |
 | P | Q P | J (Q σ Qᵀ)(Q F)⁻ᵀ = J Q σ Qᵀ Q F⁻ᵀ = Q P |
 | S | **S** | (Q F)⁻¹ (Q P) = F⁻¹ Qᵀ Q P = S |
-| ε (small strain) | **not invariant** | a pure 45° rotation gives ε₁₁ = ε₂₂ = −0.293 |
+| ε (small strain) | **neither** (see below) | ε* = sym(Q F − I): rotation read as strain |
 
-The pattern is that reference-configuration measures (C, E, U, S) do not see the rotation. Current-configuration ones (b, V, σ) rotate with it, and two-point ones (F, R, P) pick up one Q on the left. "C = FᵀF is where the rotation dies" (L20 slide 10) is the third row.
+**"Neither"** means the small strain follows neither clean rule: it is not unchanged (like C), and it does not become Q ε Qᵀ (like σ). It mistakes rotation for strain: a pure 45° rotation, F = Q with no deformation at all, gives ε₁₁ = ε₂₂ = −0.293.
+
+The pattern is that reference-configuration measures (C, E, U, S) do not see the rotation. Current-configuration ones (b, V, σ) rotate with it, and two-point ones (F, R, P) pick up one Q on the left. "C = FᵀF is where the rotation dies" (L20 slide 11) is the third row.
 
 **Worked examples** (companion script, items 6, 7 and 9):
 
@@ -94,7 +132,7 @@ The pattern is that reference-configuration measures (C, E, U, S) do not see the
 - **A neo-Hookean model passes every check.** With ψ = ½μ (tr C − 2) − μ ln J + ½λ (ln J)², E = 1 and ν = 0.3, the energy is 0.012956 for both F and Q F. The script confirms σ* = Q σ Qᵀ, P* = Q P and S* = S.
 - **Small strain is not rotation-invariant.** A pure rigid rotation should produce no strain, and E is exactly zero for any rotation. The small strain ε is not: a 45° rotation gives −0.293, and even 1° gives ε₁₁ = −1.5 × 10⁻⁴. Small-strain models, such as Lab 4's J₂ plasticity, are valid only for small rotations as well as small strains.
 
-## 6 · Frame indifference: the requirement on a constitutive model
+## 7 · Frame indifference: the requirement on a constitutive model
 
 A constitutive law is **frame-indifferent** (objective) if the response to the rotated deformation is the rotated response:
 
@@ -104,19 +142,19 @@ For a hyperelastic material this is equivalent to
 
 ψ(Q F) = ψ(F) for every rotation Q,
 
-and it holds exactly when ψ depends on F only through C: ψ(F) = ψ̃(C). The "if" direction is section 5's third row. The "only if" uses the polar decomposition: choose Q = Rᵀ, so ψ(F) = ψ(Rᵀ F) = ψ(U), and U is a function of C.
+and it holds exactly when ψ depends on F only through C: ψ(F) = ψ̃(C). The "if" direction is section 6's third row. The "only if" uses the polar decomposition: choose Q = Rᵀ, so ψ(F) = ψ(Rᵀ F) = ψ(U), and U is a function of C.
 
-This is L20 slide 5, line by line:
+This is L20 slide 6, line by line:
 
 - **"ψ(QF) = ψ(F)"** is the requirement above;
-- **"P(QF) = Q P(F); Cauchy goes to Q σ Qᵀ"** is section 5's table;
+- **"P(QF) = Q P(F); Cauchy goes to Q σ Qᵀ"** is section 6's table;
 - **"ψ sees F only through C = FᵀF"** is the equivalence just shown.
 
 **Why a network breaks it, in numbers** (companion script, item 8). The energy ψ = ½μ |F − I|², a plausible-looking formula, gives 0.010 for F but 0.187 for the same deformation rotated by 45°. It is not frame-indifferent: it treats rotation as strain. A network fed the raw components of F has no reason to do better, unless it is trained or built not to.
 
-**Why feeding C works for any weights.** If an energy network's input is C (or its invariants), a superposed rotation does not change the input, so no choice of weights can change the energy. The stresses then come from the energy (P = ∂ψ/∂F, S = 2 ∂ψ/∂C) and transform as section 5 says. This argument is about a **scalar energy**: an invariant output is not automatically an objective stress. A network that mapped the invariants of C straight to Cauchy-stress components would return the same σ for F and Q F, when σ should become Q σ Qᵀ. That is L20's "Way 3", and route 1 of the three that M1 Part 3 listed; this section supplies the proof M1 did not give. L20 slide 10 quotes `icnn_hyperelastic.py`, whose input is the invariants of C.
+**Why feeding C works for any weights.** If an energy network's input is C (or its invariants), a superposed rotation does not change the input, so no choice of weights can change the energy. The stresses then come from the energy (P = ∂ψ/∂F, S = 2 ∂ψ̃/∂C) and transform as section 6 says. This argument is about a **scalar energy**: an invariant output is not automatically an objective stress. A network that mapped the invariants of C straight to Cauchy-stress components would return the same σ for F and Q F, when σ should become Q σ Qᵀ. That is L20's "Way 3", and route 1 of the three that M1 Part 3 listed; this section supplies the proof M1 did not give. L20 slide 11 quotes `icnn_hyperelastic.py`, whose input is the invariants of C.
 
-## 7 · Material symmetry is a different statement
+## 8 · Material symmetry is a different statement
 
 Frame indifference multiplies F on the **left** (the observer, or the rotated body). Material symmetry multiplies on the **right** (the material's own reference directions):
 
@@ -125,13 +163,13 @@ Frame indifference multiplies F on the **left** (the observer, or the rotated bo
 - **Isotropic:** every rotation is in the group, so ψ depends only on the invariants of C: I₁ = tr C, I₂ = ½[(tr C)² − tr C²] and J. Case 2 in section 3 is the small-strain version of this: C' = C.
 - **Orthotropic or anisotropic:** only some rotations are in the group, so ψ needs extra structural directions. Case 3 is what happens otherwise: rotating the material directions relative to the load changes the stiffness components.
 
-For an isotropic material the two statements lead to the same remedy, the invariants of C. That is why they are easy to merge, and why anisotropy (L20 slide 6) separates them.
+For an isotropic material the two statements lead to the same remedy, the invariants of C. That is why they are easy to merge, and why anisotropy (L20 slide 7) separates them.
 
-## 8 · Where this goes
+## 9 · Where this goes
 
 - **L20:** the three ways to enforce frame indifference (loss, augmentation, architecture).
-- **L21:** polyconvexity and ICNNs. Invariant inputs make the energy frame-indifferent (section 6); they do not by themselves make it polyconvex. A suitable construction can guarantee polyconvexity: polyconvex inputs and a network that is convex **and nondecreasing** in them. L21's demo is convex in its invariant inputs but does not enforce the monotonicity, so its polyconvexity is checked, not assumed.
-- **Lab 4** is small-strain J₂ plasticity. The rotation caveat in section 5 is one reason the course stays at small strain there.
+- **L21:** polyconvexity and ICNNs. Invariant inputs make the energy frame-indifferent (section 7); they do not by themselves make it polyconvex. A suitable construction can guarantee polyconvexity: polyconvex inputs and a network that is convex **and nondecreasing** in them. L21's demo is convex in its invariant inputs but does not enforce the monotonicity, so its polyconvexity is checked, not assumed.
+- **Lab 4** is small-strain J₂ plasticity. The rotation caveat in section 6 is one reason the course stays at small strain there.
 
 ## Self-check
 
@@ -141,10 +179,11 @@ For an isotropic material the two statements lead to the same remedy, the invari
 4. Show that ψ = ½μ (tr C − 3) is frame-indifferent and that ψ = ½μ |F − I|² is not, for a rotation Q ≠ I and F = I.
 5. Explain the difference between ψ(Q F) = ψ(F) and ψ(F H) = ψ(F) in one sentence each.
 6. A 2° rigid rotation is applied to a small-strain model. Estimate the spurious strain ε₁₁ = cos θ − 1.
+7. Derive P = μ (F − F⁻ᵀ) + λ (ln J) F⁻ᵀ from the neo-Hookean ψ, and show that it reduces to σ = 2μ ε + λ (tr ε) I in small strain.
+8. Why is Lab 4's J₂ plasticity model not hyperelastic? What would a closed loading cycle show?
 
 ## Sources
 
 - Belytschko, Liu, Moran & Elkhodary, *Nonlinear Finite Elements for Continua and Structures*, 2nd ed., 2014. Chapter 5, already assigned before L20; it treats the stress measures and objectivity in the course's notation.
 - Holzapfel, *Nonlinear Solid Mechanics: A Continuum Approach for Engineering*, Wiley, 2000. The kinematics, stress and objectivity chapters.
 - Gurtin, Fried & Anand, *The Mechanics and Thermodynamics of Continua*, Cambridge, 2010. The chapters on change of frame and frame-indifference.
-- Module 1 readings: *Index notation and coordinate transformation* and the Voigt notation reference. L6: the strain and stress measures.
