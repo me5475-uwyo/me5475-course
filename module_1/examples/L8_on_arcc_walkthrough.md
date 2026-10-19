@@ -10,8 +10,8 @@ You need the UW VPN if you are off campus.
 ## 1 · Connect VS Code to MedicineBow
 
 1. Install the **Remote - SSH** extension (Microsoft) in VS Code.
-2. `F1` → **Remote-SSH: Connect to Host…** → `xzhang16@medicinebow.arcc.uwyo.edu`
-   (use *your* username, not the instructor's).
+2. `F1` → **Remote-SSH: Connect to Host…** → `<your-uwyo-username>@medicinebow.arcc.uwyo.edu`
+   (your own UWyo username, the one you use for ARCC).
 3. Wait for the bottom-left corner to read **SSH: medicinebow.arcc.uwyo.edu**.
 4. **File → Open Folder…** → make yourself a working directory, e.g. `~/me5475/L8`.
 
