@@ -454,12 +454,12 @@ components that cross zero.
 Compact evidence is in `team/reviews/2026-10-16_M4_constitutive_arcc_evidence/`; the validation
 report is `team/reviews/2026-10-16_arcc_constitutive_examples_validation.md`. Full run logs, syntax
 dump and CSVs remain under
-`/project/me5475/xzhang16/constitutive_preflight_2026-10-16/` on MedicineBow.
+the instructor's validation folder in the course project space on MedicineBow.
 
 Verdict: kinematic, Voce and Hill pass this execution gate. Drucker-Prager fails **as submitted**
 because it uses expired object aliases; the exact two-name correction was validated and is
 numerically identical. The Co-Worker audit below applies that patch and checks the evidence.
-Publication remains pending the independent Reviewer’s final gate.
+The independent Reviewer cleared the package on Oct 19 (`2026-10-16_reviewer_constitutive_reading_regate.md`), and it was published the same day.
 
 
 **Co-Worker audit, October 16 [fallback].** Applied the validated `SolidMechanics...` object names to the local companion. All four input bodies match the ARCC-tested versions after comments are removed; status comments are updated. Recomputed the diagnostics from all 11 CSVs and reproduced the reported values. Sections 1–6 and held Lab 4 placeholders are unchanged. The reading and release candidates are updated; publication still awaits independent Reviewer clearance. Audit evidence: `team/reviews/2026-10-16_M4_constitutive_coworker_audit/`.
