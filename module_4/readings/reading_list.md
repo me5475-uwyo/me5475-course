@@ -2,7 +2,15 @@
 
 The most Steve-Sun-heavy module. **[Primary]** required; **[Optional]** recommended.
 
-Every computed number in Lab 4 and in these readings — run times, data statistics, test errors — is recorded, with what was run where, in `module_4/readings/measured_results.md`. The Lab 4 Task 2–3 test errors and their analysis are added there after Lab 4 closes (Fri Nov 6).
+Every computed number in Lab 4 and in these readings — run times, data statistics, test errors — is recorded, with what was run where, in [Module 4 measured results](https://github.com/me5475-uwyo/me5475-course/blob/main/module_4/readings/measured_results.md) (`module_4/readings/measured_results.md`). References such as §1.3 mean Section 1.3 of that document. The Lab 4 Task 2–3 test errors and their analysis are added there after Lab 4 closes (Fri Nov 6).
+
+---
+
+## After Lecture 19 (Fri Oct 16)
+
+### [Optional · midterm Flavor B] `module_4/readings/constitutive_models_moose_walkthrough.md`
+
+Brief theory and four complete MOOSE input examples: Drucker-Prager pressure sensitivity, kinematic hardening, Voce saturation and Hill anisotropy. Includes the ARCC job procedure and checks to perform before generating data. Course-build checks and measured timestep sensitivity are recorded in [M4 measured results](https://github.com/me5475-uwyo/me5475-course/blob/main/module_4/readings/measured_results.md), Section 7. These examples are starting points for further validation, not a complete midterm dataset.
 
 ---
 
@@ -30,7 +38,11 @@ The three-ways-to-enforce-a-constraint taxonomy that anchors L20.
 
 ### [Primary] Lefik & Schrefler, *Artificial neural network as an incremental nonlinear constitutive model for a finite element code*, CMAME 192, 2003.
 
-First paper to enforce frame indifference in ML constitutive models.
+An early neural network used as an incremental constitutive model inside a finite element code.
+
+### [Primary] `module_4/readings/frame_indifference_primer.md`
+
+The background for L20 slides 3–5: rotating the axes versus rotating the body, how each deformation and stress measure behaves under a superposed rotation, and why an energy model fed C satisfies frame indifference for any weights (a statement about the scalar energy, not about a network that outputs stress directly). It recaps *Index notation and coordinate transformation* (M1) in four lines and covers only what is new: strain and stiffness in a rotated basis, and the active rotation. Companion: `module_4/examples/frame_indifference_checks.py`.
 
 ### [Optional] Heider, Wang & Sun, *SO(3)-invariance of informed-graph-based deep neural network for anisotropic elastoplastic materials*, CMAME 363, 2020.
 
