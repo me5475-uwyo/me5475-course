@@ -463,3 +463,42 @@ The independent Reviewer cleared the package on Oct 19 (`2026-10-16_reviewer_con
 
 
 **Co-Worker audit, October 16 [fallback].** Applied the validated `SolidMechanics...` object names to the local companion. All four input bodies match the ARCC-tested versions after comments are removed; status comments are updated. Recomputed the diagnostics from all 11 CSVs and reproduced the reported values. Sections 1–6 and held Lab 4 placeholders are unchanged. The reading and release candidates are updated; publication still awaits independent Reviewer clearance. Audit evidence: `team/reviews/2026-10-16_M4_constitutive_coworker_audit/`.
+
+---
+
+## 8 · Frame-indifference primer — worked arithmetic (`frame_indifference_checks.py`)
+
+**Worked arithmetic and transformation checks, not fitted-model performance.** Nothing here is trained or
+measured. These are exact tensor operations, rounded for printing, and they back every number in
+`frame_indifference_primer.md` and on L20 slides 3–4.
+
+- **Run:** 2026-10-19, `[fallback]` Co-Worker (Opus 5.5).
+- **Where:** the instructor's laptop, in the course demo environment (`~/ME5475-demo-env`): Python 3.9.6, NumPy
+  2.0.2, macOS arm64. Cluster job: not applicable.
+- **Command:** `python module_4/examples/frame_indifference_checks.py`. It is deterministic, with no random numbers.
+- **Script:** SHA-256 `b8bd7febba8624a49cb6fd071f44a8fc4d7a6c0d295717f883f05436993d562d`.
+- **Independent rerun:** the Reviewer reran it on 2026-10-19 and got byte-identical output.
+- **Inputs, all chosen for illustration:**
+  - **Passive rotation:** θ = 30°, with Q_ij = e'_i · e_j, so Q = [[cos θ, sin θ], [−sin θ, cos θ]].
+  - **Stress:** σ = [[2, 1], [1, 0]].
+  - **Strain:** ε = [[1, 0.5], [0.5, 0]] × 10⁻³.
+  - **Isotropic stiffness:** plane strain, E = 1, ν = 0.3.
+  - **Orthotropic stiffness:** C₁₁₁₁ = 10, C₂₂₂₂ = 1, C₁₁₂₂ = 0.3, C₁₂₁₂ = 0.5.
+  - **Deformation:** F = [[1.1, 0.2], [0, 0.95]], with a superposed rotation R(45°).
+  - **Neo-Hookean energy:** ψ = ½μ (tr C − 2) − μ ln J + ½λ (ln J)², with E = 1, ν = 0.3.
+  - **Non-objective energy:** ψ_bad = ½μ |F − I|².
+
+| item | quantity | value |
+|---|---|---|
+| 1 | v = (1, 0) → Q v | (0.866, −0.5), length 1 |
+| 2 | σ' = Q σ Qᵀ | [[2.366, −0.366], [−0.366, −0.366]]; trace 2, det −1, principal values 2.4142, −0.4142 (unchanged) |
+| 3 | ε' (× 10⁻³); γ' = 2ε'₁₂ | [[1.183, −0.183], [−0.183, −0.183]]; −0.366 × 10⁻³ |
+| 4 | isotropic C₁₁₁₁; C' = C | 1.3462; true |
+| 5 | orthotropic C'₁₁₁₁, C'₂₂₂₂, C'₁₁₂₂, C'₁₂₁₂, C'₁₁₁₂ | 6.1750, 1.6750, 1.8750, 2.0750, −2.8579; σ' = C' : ε' equals Q (C : ε) Qᵀ: true |
+| 6 | C = FᵀF before and after R | [[1.21, 0.22], [0.22, 0.9425]], both; b* = R b Rᵀ: true |
+| 7 | neo-Hookean ψ(F), ψ(RF) | 0.012956, 0.012956; σ* = R σ Rᵀ, P* = R P, S* = S: true |
+| 8 | ψ_bad(F), ψ_bad(RF) | 0.010096, 0.186638 |
+| 9 | small strain under a pure 45° rotation; E; 1° rotation | ε₁₁ = ε₂₂ = −0.2929; E = 0; ε₁₁ = −1.523 × 10⁻⁴ |
+
+The full output is in `team/reviews/2026-10-19_L20_fix_evidence/frame_indifference_checks.out`.
+
