@@ -359,3 +359,107 @@ Posted after Lab 4 closes (Fri Nov 6), together with §2.1–§2.2.
 | `sobolev_training_primer.md` (old) | MSE-only σ "off by 10–20 %", H¹ "<1 %" | 42.6 % / 10.2 % after 20 000 epochs; 1 614 % / 657 % at the default 5 000 |
 | `sobolev_training_primer.md` | H¹ "~2×", H² "~(2+N)×" cost | (not measured) — pass-count heuristics |
 | L20 source/deck | Way 3 "~10×" better on rotated test set | (not measured) |
+
+
+## 7 · After-L19 constitutive-model examples — ARCC validation
+
+**ARCC-Agent validation, 2026-10-16.** These results apply only to the four optional after-L19
+companions and do not change or reveal the held Lab 4 Task 2–3 results. At the time of the ARCC report, the companions were
+unpublished pending Co-Worker audit and independent review; see the audit update in Section 7.4.
+
+### 7.1 · Build, inputs and execution
+
+- Executable: `/project/me5475/software/moose_torch/me5475/me5475-opt`, SHA-256
+  `083a3c61596230246d31abcd010fdcdfff399b703ed0ad00417354530a47ec14`.
+- MOOSE revision: `437fbe50823cac0ab39dcf77b2347a0c98bb575a`; course-app revision:
+  `d0305f4610037ed93a0ab144f492e7fecd718038`; reported application version: `437fbe5082`.
+- Runtime stack: `arcc/1.0`, `gcc/14.2.0`, `openmpi/5.0.5`,
+  `hdf5/1.14.3__hl_True__fortran_False-ompi`, `miniconda3/24.3.0`, Python 3.11.15.
+- All five validation-file hashes matched the handoff exactly. The eight baseline jobs ran the
+  unmodified candidates; each input first passed `--check-input` and then completed with exit code
+  `0:0`.
+
+| model | dt = 0.01 job · elapsed · MaxRSS | dt = 0.005 job · elapsed · MaxRSS | states |
+|---|---|---|---|
+| Drucker-Prager | 24624299 · 10 s · 275960 K | 24624300 · 12 s · 277412 K | 301 / 601 |
+| kinematic | 24624301 · 10 s · 263568 K | 24624302 · 13 s · 277528 K | 301 / 601 |
+| Voce | 24624303 · 9 s · 275228 K | 24624304 · 11 s · 271952 K | 301 / 601 |
+| Hill | 24624305 · 9 s · 263952 K | 24624306 · 11 s · 275496 K | 301 / 601 |
+
+Every CSV was finite through t = 3 with strictly increasing times. The observed step ranges were
+0.01 ± 2.3e-16 and 0.005 ± 3.4e-16: no adaptive cutbacks occurred. The largest imposed-strain
+error was 1.60e-15 at dt = 0.01 and 3.34e-15 at dt = 0.005. Thus ε_xx = 0.02 f(t) and
+ε_yy = ε_zz = ε_xy = 0 were reproduced to the stated 1e-10 absolute tolerance. All four models
+developed nonzero plastic strain; maximum plastic-tensor norms at dt = 0.01 were 0.00629148,
+0.00527514, 0.00527727 and 0.00202455 in table order.
+
+### 7.2 · Halved-timestep comparison
+
+The 301 coarse states were compared with the dt = 0.005 results at the same times. For each output
+column, the scale-normalized difference is
+`max(|coarse - fine|) / max(max(|fine|), 1e-12)`. Pointwise relative differences exclude fine-grid
+values below `max(1e-10, 1e-6 × column scale)`; they remain ill-conditioned near sign crossings, so
+the scale-normalized values below are the primary comparison.
+
+| model | max stress abs. diff. | max stress scale-normalized diff. | max plastic-strain abs. diff. | max plastic scale-normalized diff. |
+|---|---:|---:|---:|---:|
+| Drucker-Prager | 3.38e-9 | 2.83e-9 | 1.97e-11 | 1.03e-8 |
+| kinematic | 6.80e-5 | 2.88e-5 (0.00288 %) | 8.85e-7 | 2.05e-4 (0.0205 %) |
+| Voce | 6.41e-9 | 2.56e-9 | 8.33e-11 | 1.93e-8 |
+| Hill | 1.25e-3 | 8.05e-4 (0.0805 %) | 1.85e-5 | 1.31e-2 (1.31 %) |
+
+This single halving quantifies timestep sensitivity; it is not a proof of an asymptotic convergence
+rate. Hill is the most timestep-sensitive of these four runs, especially in plastic-strain
+components that cross zero.
+
+### 7.3 · Model-specific checks
+
+- **Drucker-Prager — validated correction applied locally.** The original input parsed and ran, but
+  `TensorMechanicsHardeningConstant` and `TensorMechanicsPlasticDruckerPrager` are expired aliases
+  on the pinned build. Replacing them with `SolidMechanicsHardeningConstant` and
+  `SolidMechanicsPlasticDruckerPrager` removed the warnings; corrected job 24624328 completed in
+  8 s with a CSV numerically identical to the original (maximum difference 0). The pinned source
+  gives outer-tip A = 0.14858308, K = 1.22468600 and flow B = 0.07094363 for the chosen angles and
+  cohesion. The largest cone residual on plastic increments was 9.07e-7 in the baseline, within
+  the 0.001 smoothing scale. A controlled equibiaxial in-plane variant (job 24624329) has the same
+  deviatoric strain-amplitude norm but a different pressure path: it first yielded at t = 0.13,
+  ε_xx = ε_yy = 0.0104 and P = -1.72957, versus t = 0.19, ε_xx = 0.0152 and P = -1.26093 for the
+  x-only case. This demonstrates pressure sensitivity. Across both tests the largest normal-stress
+  magnitude was 4.94702, over 2e5 times smaller than the 1e6 cap strengths; the caps are therefore
+  inferred inactive, although no direct cap-activity flag was output.
+- **Kinematic — pass.** `isotropic_hardening_constant`, `q` and `b` are all zero. The pinned source
+  updates backstress as `(2/3) C_k Δε^p - γ X Δp`; thus the input's `kinematic_hardening_modulus = 10`
+  is C_k before the 2/3 factor, and γ = 20 supplies nonlinear recovery. At dt = 0.01, first forward
+  plastic flow appeared at t = 0.17 and σ_eq = 1.00368; reverse plastic flow appeared at t = 0.58
+  and σ_eq = 0.96134. The reduced reverse magnitude and continuing plastic-strain evolution confirm
+  active kinematic translation/Bauschinger behavior.
+- **Voce — pass.** Pinned source evaluates `hardening_function` at old accumulated effective plastic
+  strain plus the current increment, then subtracts the separately supplied initial yield stress.
+  The function must therefore return total yield stress, as written. Reconstructing path-accumulated
+  p from the dt = 0.005 plastic-strain increments gave p = 0.0362260 at the last plastic point and
+  σ_Y = 1.25772147; measured equivalent stress agreed within 2.34e-9. The theoretical tangent fell
+  from Qb = 10 to 4.84557, consistent with saturation toward σ0 + Q = 1.5 rather than dependence on
+  simulation time.
+- **Hill — pass with measured timestep sensitivity above.** Pinned source constructs the stated
+  Hill matrix and returns ω = sqrt(Q_H/2). During plastic increments, maximum |ω - 1| was 1.64e-10
+  for x loading and 9.33e-14 for y loading. With material axes fixed, the x-directed run first
+  yielded at t = 0.22, ε_xx = 0.0176 and σ_xx = 2.36569; the y-directed controlled variant
+  (job 24624330) first yielded at t = 0.21, ε_yy = 0.0168 and σ_yy = 2.22696. This directional
+  difference is consistent with the ideal-uniaxial normalized thresholds 1.34840 (x) and 1.24035
+  (y), while the measured runs remain constrained plane-strain rather than uniaxial-stress tests.
+  `hardening_constant = 0` was retained.
+
+### 7.4 · Evidence and release status
+
+Compact evidence is in `team/reviews/2026-10-16_M4_constitutive_arcc_evidence/`; the validation
+report is `team/reviews/2026-10-16_arcc_constitutive_examples_validation.md`. Full run logs, syntax
+dump and CSVs remain under
+`/project/me5475/xzhang16/constitutive_preflight_2026-10-16/` on MedicineBow.
+
+Verdict: kinematic, Voce and Hill pass this execution gate. Drucker-Prager fails **as submitted**
+because it uses expired object aliases; the exact two-name correction was validated and is
+numerically identical. The Co-Worker audit below applies that patch and checks the evidence.
+Publication remains pending the independent Reviewer’s final gate.
+
+
+**Co-Worker audit, October 16 [fallback].** Applied the validated `SolidMechanics...` object names to the local companion. All four input bodies match the ARCC-tested versions after comments are removed; status comments are updated. Recomputed the diagnostics from all 11 CSVs and reproduced the reported values. Sections 1–6 and held Lab 4 placeholders are unchanged. The reading and release candidates are updated; publication still awaits independent Reviewer clearance. Audit evidence: `team/reviews/2026-10-16_M4_constitutive_coworker_audit/`.
