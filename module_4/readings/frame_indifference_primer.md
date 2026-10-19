@@ -165,7 +165,32 @@ Frame indifference multiplies F on the **left** (the observer, or the rotated bo
 - **isotropic:** every rotation;
 - **fibers along e₁** (a unidirectional composite, transversely isotropic): every rotation about e₁, and the 180° rotations about any axis perpendicular to e₁, which reverse the fiber direction (a straight fiber looks the same either way);
 - **cubic crystal:** the 24 rotations that map a cube onto itself;
-- **section 3's orthotropic stiffness:** a 180° rotation is a symmetry (four factors of Q = −I cancel), but 30° is not, since case 3 showed that it changes the components; nor is 90°, which would swap C₁₁₁₁ = 10 and C₂₂₂₂ = 1.
+- **section 3's orthotropic stiffness** (2-D): a 180° rotation is a symmetry (in 2-D it is Q = −I, and its four factors cancel), but 30° is not, since case 3 showed that it changes the components; nor is 90°, which would swap C₁₁₁₁ = 10 and C₂₂₂₂ = 1.
+
+**Why the right side: the two ends of F.** F = ∂x/∂X maps a line element in the reference body to the same line element after deformation, dx = F dX. Its **right** side takes in reference vectors (dX, directions drawn in the undeformed material); its **left** side puts out current vectors (dx, directions in the deformed body, as an observer sees them). In index notation `F_iJ` has a spatial index i and a material index J, and a rotation can act on either one:
+
+| | Q on the left | Q on the right |
+|---|---|---|
+| in indices | `(QF)_iJ = Q_ik F_kJ` | `(FQ)_iJ = F_iK Q_KJ` |
+| rotates | the deformed body, or the observer | the reference directions |
+| happens | after the deformation | before it |
+
+A material's own directions (a fiber direction a, a lattice vector, a rolling direction) are drawn in the undeformed material, so they are reference vectors and attach to the right side of F. A statement about them, which is what a symmetry is, therefore acts on the right.
+
+What the material feels is the stretch of its directions: the squared stretch of a **unit** material direction a is a · C a (for a non-unit a, divide by a · a). On the left, C does not change, (Q F)ᵀ(Q F) = C, so every direction keeps its stretch and no material of any kind can detect the rotation. On the right, C becomes Qᵀ C Q, so a · C a becomes (Q a) · C (Q a): the material now feels the deformation along the rotated direction Q a. An isotropic material treats all directions alike and cannot tell. A fiber material can, unless Q a = ±a.
+
+**A two-line example** (2-D; companion script, item 12). Take F = diag(1.1, 1), so C = diag(1.21, 1), with fibers along the unit direction a = e₁.
+
+| | C | fiber stretch² a · C a | I₁ = tr C |
+|---|---|---|---|
+| original F | diag(1.21, 1) | 1.21 | 2.21 |
+| Q F, any rotation Q | diag(1.21, 1) | 1.21 | 2.21 |
+| F Q, Q = 90° | diag(1, 1.21) | 1.00 | 2.21 |
+| F Q, Q = 180° (Q = −I) | diag(1.21, 1) | 1.21 | 2.21 |
+
+On the left nothing changes, for any material. On the right, a 90° rotation moves the stretch from the fiber to the transverse direction: a fiber composite would store a different energy, so 90° is not its symmetry, while an isotropic material, which sees only I₁, I₂ and J, cannot tell. A 180° rotation only reverses the fiber, and is a symmetry of both. (In 2-D, −I is the 180° rotation; in 3-D it is not a rotation, and the fiber-reversing half-turns are rotations about axes perpendicular to a.)
+
+Two descriptions of "the same rotation on the right" appear below, and they differ by a transpose. **Relabeling** the reference by X' = Q X turns F into F Qᵀ (step 3). **Composing** F with a reference-side rotation gives F Q. Both act on the right; step 6 shows why the symmetry condition can be written either way.
 
 **Where the equation comes from, step by step.**
 
