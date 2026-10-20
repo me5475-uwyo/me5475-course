@@ -5,8 +5,9 @@
 #
 # Runs plate_with_hole_inverse.py with seeds 0..9 as a SLURM array, one GPU each.
 # Each seed changes several things at once: which 20 points are measured, the
-# noise on them and on the force, the collocation points and the initial
-# weights. The spread of the ten (E, nu) estimates is their COMBINED effect
+# noise on them and on the force, the initial weights and part of the boundary
+# training points (the 4 000 interior collocation points are the same at every
+# seed: DeepXDE's default sampler is deterministic). The spread of the ten (E, nu) estimates is their COMBINED effect
 # (Task 5e) -- not the uncertainty of one experiment.
 #
 # Submit from your task5_inverse/ folder, with plate_with_hole_inverse.py and
