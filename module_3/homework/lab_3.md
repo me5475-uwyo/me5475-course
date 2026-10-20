@@ -209,7 +209,7 @@ Then count the attempted trials — completed, pruned and failed: `python -c "im
 
 **Validation and test.** The sweep splits the reference grid once (`--split-seed 42`, the same for every worker) into a **validation half**, which every trial is scored on, and a **test half**, which the Optuna objective never uses. Tasks 2 and 3 already looked at the whole grid, so the test half is "unused by the Optuna objective", not an untouched end-to-end test set.
 
-**4c.** Analyse with the Module 2 script (login node, seconds):
+**4c.** Analyze with the Module 2 script (login node, seconds):
 
 ```bash
 python /project/me5475/examples/analyze_study.py --storage sqlite:///pinn_opt.db --study-name pinn_lab3_sweep --out-dir . | tee study_summary.txt
@@ -221,9 +221,9 @@ python /project/me5475/examples/analyze_study.py --storage sqlite:///pinn_opt.db
 
 ### Task 5 — Inverse problem (stretch, +20 bonus)
 
-*(L18, Wed Oct 14, covers inverse PINNs.)*
+*(L18, Fri Oct 9, covers inverse PINNs.)*
 
-**Why a force is needed.** The plate is loaded by a **prescribed displacement**, so the displacement field does not depend on E at all — only on ν. Stress, and so force, scales with E. Displacement data alone can identify ν but never E. `plate_with_hole_inverse.py` therefore also uses **one reaction force**: the total force on the loaded edge, F = ∫₀¹ σ₁₁(1, x₂) dx₂, which it reads from the reference's measured quantities (1.0734 for E = 1; `measured_results.md` §1) and perturbs with the same 1 % noise as the displacements.
+**Why a force is needed.** The plate is loaded by a **prescribed displacement**, so the displacement field does not depend on E at all — only on ν. Stress, and so force, scales with E. Displacement data alone can identify ν but never E. `plate_with_hole_inverse.py` therefore also uses **one reaction force**: the total force on the loaded edge, F = ∫₀¹ σ₁₁(1, x₂) dx₂, which it reads from the reference's measured quantities (1.0734 for E = 1; `measured_results.md` §1) and perturbs it with 1 % noise, like the displacements (for the force, 1 % of its value; for the displacements, 1 % of the largest |u| among the 20 points).
 
 **5a.** Build the measurement file (200 random points; the script picks 20 and adds noise):
 
@@ -245,7 +245,7 @@ sbatch pinn_inverse_ensemble.sbatch
 
 **5d.** Plot the ten (E, ν) estimates (`ensemble_plot.png`), with the truth (1.0, 0.3) and the ensemble mean marked.
 
-**5e.** Interpret the spread honestly. Each seed changes *several* things at once — which 20 points are measured, the noise on them and on the force, the collocation points and the initial weights — so the spread measures their **combined** effect, not the uncertainty of one experiment. Ten runs are not enough to claim a calibrated 95 % interval. What does the spread tell you, and what would you change to separate measurement uncertainty from optimisation randomness?
+**5e.** Interpret the spread honestly. Each seed changes *several* things at once — which 20 points are measured, the noise on them and on the force, the initial weights and part of the boundary training points (the 4 000 interior collocation points are the same at every seed: DeepXDE's default sampler is deterministic) — so the spread measures their **combined** effect, not the uncertainty of one experiment. Ten runs are not enough to claim a calibrated 95 % interval. What does the spread tell you, and what would you change to separate measurement uncertainty from optimization randomness?
 
 ### Task 6 — Reflection (≤ 600 words)
 
@@ -274,7 +274,7 @@ Answer all five:
 **Penalty conditions.**
 
 - Failure to compare to MOOSE quantitatively (no L2 error reported): -10.
-- The Optuna study holds fewer than 24 attempted trials (completed, pruned and failed all count — pruning is expected and is not penalised): -5.
+- The Optuna study holds fewer than 24 attempted trials (completed, pruned and failed all count — pruning is expected and is not penalized): -5.
 - Reflection generic or boilerplate: -10.
 
 ---
@@ -285,15 +285,15 @@ Answer all five:
 - **A low PINN loss is not a correct solution.** Task 1b's missing-BC story is the reason Task 2 exists: always compare against an independent reference.
 - **Exact BCs do not remove the need for enough collocation points.** With 1 500 points the hard-BC PINN fitted its training points and oscillated between them (test loss 7.7 against a training loss of 8e-7); with 4 000 it did not (`measured_results.md` §3). If your test loss is far above your training loss, suspect this first.
 - **For Task 4, narrow the learning-rate range with care** — L9 and L10's lessons apply. Don't spend trials on rates that cannot work.
-- **Task 5 runs can land far from the truth.** Report what fraction of your runs did, and check whether their force and displacement fits were still good — that tells you whether it is an optimisation failure or a genuinely ambiguous fit.
+- **Task 5 runs can land far from the truth.** Report what fraction of your runs did, and check whether their force and displacement fits were still good — that tells you whether it is an optimization failure or a genuinely ambiguous fit.
 
 ---
 
 ## What this lab leads into
 
 - **Midterm project (due Sun Nov 1).** The full spec is released at the start of M4. The "PINN inverse problem" option builds directly on Task 5; tuning is recommended for every option.
-- **Module 5.** You will deploy a trained constitutive network inside MOOSE and run the same plate problem — a three-way comparison: MOOSE (M0), PINN (M3), NN-augmented MOOSE (M5).
-- **Module 7.** Operator learning generalises the parametric PINN to whole input functions; you will see DeepONet on the same geometry.
+- **Module 5.** You will deploy your Lab 1 constitutive network inside MOOSE as the material, and compare it with MOOSE's elastic material on Lab 0's plate. An optional task then puts MOOSE, that network and your Lab 3 PINN side by side on this lab's plate.
+- **Module 7.** Operator learning generalizes the parametric PINN from a few numbers, such as (E, ν), to whole input functions. Lab 7 trains DeepONet and FNO on the 1-D Burgers' equation.
 
 ---
 
