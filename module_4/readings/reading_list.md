@@ -62,7 +62,7 @@ ICNN paper. Read Sections 1–3.
 
 ### [Primary] Klein, Fernandez, Martin, Neff & Weeger, *Polyconvex anisotropic hyperelasticity with neural networks*, JMPS 159, 2022.
 
-Mechanics application of ICNN.
+Mechanics application of ICNN, and the sufficient construction for polyconvexity (monotone in polyconvex invariants).
 
 ### [Primary] `module_4/readings/sobolev_training_primer.md`
 
@@ -70,7 +70,7 @@ Synthesized H¹/H² derivation and code.
 
 ### [Primary] `module_4/readings/icnn_primer.md`
 
-ICNN explained in 2 pages.
+The ICNN: why it is convex in its inputs, why that is not by itself polyconvexity, and how to check a trained model (`module_4/examples/icnn_rank_one_check.py`).
 
 ### [Optional] Linka & Kuhl, *A new family of constitutive artificial neural networks towards automated model discovery*, CMAME 403, 2023.
 
