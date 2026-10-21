@@ -292,10 +292,85 @@ reproduces the printed test numbers. Polyconvexity implies rank-one convexity: t
 The neo-Hookean truth has 0 / 2 700 negative.
 
 - **By construction:** the network is convex in its four inputs.
-- **Why that is not enough:** convexity in (I₁, I₂, J, −ln J) gives polyconvexity in F only if ψ is also
-  non-decreasing in I₁, I₂ and −ln J. The unconstrained skip weights let those slopes go negative.
-- **So** polyconvexity is **not** a property of this architecture. The 20 000-epoch model is rank-one
-  convex at these samples only because it fits a convex target.
+- **Why that is not enough:** convexity in (I₁, I₂, J, −ln J) gives polyconvexity in F if ψ is also
+  non-decreasing in I₁, I₂ and −ln J. The unconstrained skip weights let those slopes go negative. (Corrected 2026-10-19: this was "only if". The
+  condition is sufficient, not necessary: on the course window 0.5 < J < 1.8 the neo-Hookean truth decreases in −ln J
+  where J > e^(μ/λ) and is polyconvex there. Corrected again 2026-10-20 (Reviewer B1): the truth is polyconvex on the
+  investigated window, not globally on J > 0. (The same convex volumetric representation in fact holds for
+  0 < J < e^1.5 ≈ 4.48; the window is not a maximal domain. Wording refined 2026-10-21, Reviewer R-N1.) Its rank-one curvature at F = diag(0.1, 10, 10) along e₁⊗e₁ is −79.76.)
+- **So** polyconvexity is **not** a property of this architecture. The 20 000-epoch model showed no negative
+  rank-one curvature at these samples. That is a finding about these samples, not global rank-one convexity, and not
+  a causal explanation. (Corrected 2026-10-20, Reviewer B1. This read "only because it fits a convex target". The
+  target is convex in the four features, not in F.)
+
+### 4.1 · 2026-10-19 revision for L21 (D6 b): default 20 000 epochs, P naming, `icnn_rank_one_check.py` `[fallback]`
+
+**What changed:**
+- `icnn_hyperelastic.py`:
+  - the default `--epochs` is 20 000;
+  - ∂ψ/∂F is named `P`, the first Piola–Kirchhoff stress, in the code and its printouts;
+  - a third plot panel shows stress parity;
+  - `--save-model` is new;
+  - the architecture is unchanged.
+- **New:** `icnn_rank_one_check.py` loads a saved model. It reports the signs of ∂ψ/∂y (the sufficient condition) and
+  the rank-one curvature d²/dt² ψ(F + t a⊗b) at t = 0, for 127 sample F's × 20 random unit (a, b) pairs, with seed 0.
+
+**Hashes:**
+- **Current** (2026-10-20, after Reviewer B1–B4 and N2–N4):
+  - `icnn_hyperelastic.py` SHA-256 `2866f69d4ef8caa3a6f1ad4c3afd239f230af93463e5af3a58147a4d3fb588bb`. Only the plot styling changed, with the same 248 lines;
+  - `icnn_rank_one_check.py` SHA-256 `142833042739982fd53d2e057e27f19544f43ae5cbf0dbfa2ce888c043e7e20c`. Its explanations changed, and it now reports curvatures
+    in [−tol, 0) separately (default tol = 10⁻⁶).
+- **Historical runs:**
+  - training job 24714130 ran trainer `a3be495d…` and companion `e7f56ad2…`;
+  - check job 24714368 ran companion `21e8a382…`;
+  - check job 24726081 ran the current companion, on job 24714130's checkpoints. Those weights equal what the
+    current trainer produces, since its numerical path is unchanged; see the laptop rerun below.
+
+**Runs:**
+- **ARCC:** jobs 24714130 (training plus checks; 6 min 14 s; node t481) and 24714368 (checks only; 17 s).
+  Environment: `/project/me5475/envs/ml4sm`, python 3.11.15, torch 2.5.1+cu121, numpy 2.4.4, 4 CPU cores. Wall times:
+  - 20 000 epochs: 152 s (H¹) and 149 s (energy only);
+  - 5 000 epochs: 45 s.
+- **ARCC, 2026-10-20:** job 24726081 (checks only, current companion; 22 s; node t481).
+- **Laptop:** the instructor's laptop, `~/ME5475-demo-env`, torch 2.8.0, about 39–41 s per 20 000-epoch run. It
+  printed the same training numbers to every digit shown. On 2026-10-20 it reran all three trainings with the current
+  trainer: the printed output is identical to the 2026-10-19 runs apart from timing lines, which shows the
+  numerical path is unchanged.
+
+| run | test ψ MSE | test P MSE | test P relative error |
+|---|---|---|---|
+| H¹ (α = 1), 20 000 epochs, the new default | 2.4689e-04 | 1.9326e-03 | 10.2221 % |
+| energy only (α = 0), 20 000 epochs | 3.3190e-03 | 3.3616e-02 | 42.6326 % |
+| H¹, 5 000 epochs (the old default) | 2.6141e+00 | 7.9859e+00 | 657.1029 % |
+
+These equal jobs 22580423, 22580424 and 22580641 above. The rename does not change any number.
+
+**`icnn_rank_one_check.py`** (127 F's in the training window, 2 540 (F, a, b) samples):
+
+| trained model | ∂ψ/∂(I₁−3) < 0 | ∂ψ/∂(I₂−3) < 0 | ∂ψ/∂(−ln J) < 0 | rank-one curvature < −10⁻⁶ | minimum curvature |
+|---|---|---|---|---|---|
+| H¹, 20 000 epochs | 0.0 % | 91.3 % | 45.7 % | 0 / 2 540 | +0.2174 |
+| energy only, 20 000 epochs | 7.9 % | 99.2 % | 10.2 % | 245 / 2 540 (9.6 %), on both ARCC and the laptop | −2.051 |
+| H¹, 5 000 epochs | 93.7 % | 83.5 % | 99.2 % | 1 530 / 2 540 (60.2 %) | −35.65 |
+| neo-Hookean truth (polyconvex on the window 0.5 < J < 1.8; not globally) | — | — | 3.9 % (μ − λ ln J < 0) | 0 / 2 540 | — |
+
+- **Near-zero curvatures:** on 2026-10-19, with a strict `< 0` count, the laptop found 246 and ARCC 245. With the
+  tolerance, both find 245 below −10⁻⁶. The laptop also finds one value in [−10⁻⁶, 0) (−6.78e−7, per the Reviewer's
+  independent run); ARCC finds none there. The sign of a value that close to zero depends on the environment. The
+  minima (−2.051 and −35.65) make both negative verdicts robust.
+- **Reading:**
+  - after H¹ training, this sample found no negative rank-one curvature;
+  - the energy-only and undertrained models have substantial negative curvatures;
+  - the architecture alone guarantees neither outcome;
+  - a clearly negative curvature disproves polyconvexity, and finding none proves nothing;
+  - the H¹ default shows no violation while it decreases in I₂ and −ln J, so the sufficient construction is not what
+    holds it up. (Corrected 2026-10-20, B1: this read "passes because it fits a convex target".)
+- **These results differ from the Oct 3 analysis above** (1 785 / 2 700 at 5 000 epochs, 0 / 2 700 at 20 000) only
+  because the samples differ: `analyze_icnn.py` used the held-out test F's, and the companion draws its own F's
+  with seed 0.
+
+Evidence: `team/reviews/2026-10-19_L21_D6_evidence/`, with the ARCC outputs, sbatch files and figures, plus the laptop
+outputs. The 2026-10-20 additions are `arcc_l21_check_24726081.out`, `laptop_R_*.txt` and the regenerated `laptop_R_*.png`.
 
 ## 5 · Superseded 2026-10-03 — radial loading (0 → a → 0, three times, never reversed)
 
