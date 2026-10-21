@@ -332,6 +332,11 @@ The neo-Hookean truth has 0 / 2 700 negative.
   - 20 000 epochs: 152 s (H¹) and 149 s (energy only);
   - 5 000 epochs: 45 s.
 - **ARCC, 2026-10-20:** job 24726081 (checks only, current companion; 22 s; node t481).
+- **ARCC, 2026-10-21, as a student would run it:** `icnn_demo.sbatch` on account `me5475`, partition `mb`, 4 cores,
+  from a fresh folder holding the two scripts copied from `/project/me5475/examples/`. Jobs 24746057 (α = 1) and
+  24746058 (α = 0) were submitted together; the queue wait was 30 s, and **each ran in 1 min 15 s** on mbcpu-003
+  (training plus check). The printed results are identical to the tables below, including the 245 / 2 540 count
+  for energy only (0 in [−10⁻⁶, 0)).
 - **Laptop:** the instructor's laptop, `~/ME5475-demo-env`, torch 2.8.0, about 39–41 s per 20 000-epoch run. It
   printed the same training numbers to every digit shown. On 2026-10-20 it reran all three trainings with the current
   trainer: the printed output is identical to the 2026-10-19 runs apart from timing lines, which shows the
