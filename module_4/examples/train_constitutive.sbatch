@@ -41,7 +41,7 @@ case "$VARIANT" in
     stateless)        SCRIPT="stateless_mlp_baseline.py"; ARGS="--data trajectories.npz --epochs 2000" ;;
     stateless_with_q) SCRIPT="stateless_mlp_baseline.py"; ARGS="--data trajectories.npz --epochs 2000 --include-plastic-strain" ;;
     lstm)             SCRIPT="lstm_plasticity.py";        ARGS="--data trajectories.npz --epochs 2000 --hidden 32 --layers 2" ;;
-    icnn)             SCRIPT="icnn_hyperelastic.py";      ARGS="--epochs 5000 --hidden 32" ;;
+    icnn)             SCRIPT="icnn_hyperelastic.py";      ARGS="--epochs 20000 --hidden 32" ;;
     levelset)         SCRIPT="levelset_yield_surface.py"; ARGS="--epochs 5000 --hidden 32 --n-samples 1000" ;;
     *)
         echo "Unknown variant: $VARIANT"; exit 1 ;;
