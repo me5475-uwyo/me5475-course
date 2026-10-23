@@ -102,11 +102,13 @@ The extra passes grow with the input dimension, so H² is cheap for small inputs
 
 ReLU's first derivative is a step: 0 for negative inputs, 1 for positive ones, undefined at the kink. Its second derivative is zero everywhere except at the kink, where, in the distributional sense, it is a delta. Pointwise autodiff never sees that delta: it returns 0 for the second derivative almost everywhere.
 
-**So H² Sobolev with ReLU cannot work.** The predicted Hessian is zero almost everywhere, so the Hessian term of the loss is just the size of the true Hessian. That term can be large, and no parameter update can reduce it, because its gradient through the network is zero.
+**So H² Sobolev with ReLU cannot work, for a network built from affine layers and ReLUs and differentiated with respect to its direct input.** The predicted Hessian is zero almost everywhere, so the Hessian term of the loss is just the size of the true Hessian. That term can be large, and no parameter update can reduce it, because its gradient through the network is zero.
+
+This conclusion depends on that setting. If the network's input is a **nonlinear feature** of the physical variable, as in `icnn_hyperelastic.py`, where the inputs are invariants of F, then the Hessian with respect to F picks up the curvature of the features themselves: D²_F(g∘y) = Dyᵀ (D²_y g) Dy + Σⱼ (∂g/∂yⱼ) D²_F yⱼ. The second term is generally nonzero even when D²_y g = 0. Multiply layers (below) change it as well.
 
 For H¹ Sobolev, ReLU is usable. A ReLU network's gradient is piecewise constant, so the derivative fit is piecewise constant too, and the function fits are less smooth.
 
-For H² Sobolev, use activations with continuous second derivatives: tanh, GELU or softplus. Continuous does not mean nonzero everywhere; for example, tanh'' is 0 at 0.
+For H² Sobolev in an ordinary network, use activations with continuous second derivatives: tanh, GELU or softplus. Continuous does not mean nonzero everywhere; for example, tanh'' is 0 at 0. **For an ICNN, only softplus of these keeps the convexity proof**, because the activation must be convex and non-decreasing; tanh and GELU are not (`icnn_primer.md`).
 
 Steve Sun's "multiply layer" architecture (L6 slide 25) squares a layer's output element by element. With ReLU, as Vlassis & Sun use it, each squaring doubles the degree of every nonconstant polynomial piece, which makes nonzero second derivatives possible (it does not guarantee them for every piece or weight setting, nor make them continuous across the kinks). `module_4/examples/levelset_yield_surface.py` puts multiply layers after tanh, whose second derivatives are already continuous.
 
@@ -122,20 +124,20 @@ P_iJ   = d psi / d F_iJ  = mu (F - F^{-T}) + lambda (ln J) F^{-T}   # first Piol
 A_iJkL = d P_iJ / d F_kL                                            # its tangent, dP/dF
 ```
 
-The derivative of an energy per reference volume with respect to F is the **first Piola–Kirchhoff stress P**, under the course convention P = J σ F⁻ᵀ, where σ is the Cauchy stress. Its tangent ∂P/∂F is the material tangent of this hyperelastic model. The "algorithmic tangent" is the corresponding quantity for a return-mapping plasticity update. **The demo's code names this tensor `sigma` and prints "Test sigma rel-err", but it is P, not the Cauchy stress.** Every stress number below is an error in P.
+The derivative of an energy per reference volume with respect to F is the **first Piola–Kirchhoff stress P**, under the course convention P = J σ F⁻ᵀ, where σ is the Cauchy stress. Its tangent ∂P/∂F is the material tangent of this hyperelastic model. The "algorithmic tangent" is the corresponding quantity for a return-mapping plasticity update. The current demo names this tensor `P` and prints "Test P rel-err"; older logs use `sigma`. Every stress number below is an error in P, not in the Cauchy stress.
 
 Training a neural network ψ_NN(F) with:
 
-- **MSE only:** ψ_NN(F) matches ψ_true(F) at training points; P derived from autograd can still be far off at nearby F values.
-- **H¹ Sobolev:** ψ_NN(F) AND ∂ψ_NN/∂F = P match at training points; P-recovery is much better.
-- **H² Sobolev:** also matches the tangent ∂P/∂F.
+- **MSE only:** the loss fits ψ_NN(F) to ψ_true(F) at the training points (a finite loss does not make them match exactly); P derived from autograd is not fitted at all, and can be far off, even at the training points.
+- **H¹ Sobolev:** the loss fits both ψ_NN(F) and ∂ψ_NN/∂F = P at the training points; P-recovery is much better.
+- **H² Sobolev:** also fits the tangent ∂P/∂F.
 
-Measured with `icnn_hyperelastic.py` (`measured_results.md` §4), on held-out F drawn from the training distribution: after 20 000 epochs the relative error in P was **42.6 % with MSE only and 10.2 % with H¹** (H² is not implemented there). At the script's default 5 000 epochs neither has converged (1 614 % and 657 %), so run it longer before comparing.
+Measured with `icnn_hyperelastic.py` (`measured_results.md` §4), on held-out F drawn from the training distribution: after 20 000 epochs the relative error in P was **42.6 % with MSE only and 10.2 % with H¹** (H² is not implemented there). The script's current default is 20 000 epochs; earlier runs used a default of 5 000. At 5 000 epochs neither had converged (1 614 % and 657 %), so do not compare at that length.
 
 The visual signature to expect in parity plots of P_true vs P_pred (only MSE and H¹ were measured, §4):
 - MSE-only training: scatter, but with substantial spread.
 - H¹ training: tighter clustering on the diagonal.
-- H² training (not measured): similar to H¹ for P, with the tangent also matched.
+- H² training (not implemented or measured here): adds tangent-error supervision; stress and tangent accuracy must be evaluated.
 
 For Lab 4 and the midterm Flavor B, H¹ training is the recommended default.
 
