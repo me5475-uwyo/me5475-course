@@ -2,7 +2,7 @@
 
 The most Steve-Sun-heavy module. **[Primary]** required; **[Optional]** recommended.
 
-Every computed number in Lab 4 and in these readings — run times, data statistics, test errors — is recorded, with what was run where, in [Module 4 measured results](https://github.com/me5475-uwyo/me5475-course/blob/main/module_4/readings/measured_results.md) (`module_4/readings/measured_results.md`). References such as §1.3 mean Section 1.3 of that document. The Lab 4 Task 2–3 test errors and their analysis are added there after Lab 4 closes (Fri Nov 6).
+Every computed number in Lab 4 and in these readings — run times, data statistics, test errors — is recorded, with what was run where, in [Module 4 measured results](https://github.com/me5475-uwyo/me5475-course/blob/main/module_4/readings/measured_results.md) (`module_4/readings/measured_results.md`). References such as §1.3 mean Section 1.3 of that document. The Lab 4 Task 2–3 test errors and their analysis remain held until the midterm closes on Sun Nov 8, 11:59 PM MT.
 
 ---
 
@@ -32,9 +32,7 @@ You read this in M0. Re-skim now that you understand the formalism.
 
 ## Before Lecture 21 (assigned in Lecture 20)
 
-### [Primary] Steve Sun's L3 slides 9–20 (in `ML4Mechanics/Lecture_3_supervised_ML_physics_constraints.pdf`).
-
-The three-ways-to-enforce-a-constraint taxonomy that anchors L20.
+*Source, not a reading:* the three-ways-to-enforce-a-constraint taxonomy that anchors L20 comes from Steve Sun's L3 slides 9–20. Sun's slides are not distributed to students.
 
 ### [Primary] Lefik & Schrefler, *Artificial neural network as an incremental nonlinear constitutive model for a finite element code*, CMAME 192, 2003.
 
@@ -84,9 +82,7 @@ The classical reference on polyconvexity.
 
 ## Before Lecture 23 (assigned in Lecture 22)
 
-### [Primary] Steve Sun's L4 slides 14–33 (in `ML4Mechanics/Lecture_4_recurrent_neural_network.pdf`).
-
-The RNN-for-plasticity material this lecture condenses.
+*Source, not a reading:* L22's RNN-for-plasticity material condenses Steve Sun's L4 slides 14–33. Sun's slides are not distributed to students.
 
 ### [Primary] Mozaffar et al. PNAS 2019 (re-read).
 
@@ -106,11 +102,13 @@ The best LSTM explainer; Steve also cites it.
 
 ### [Primary] Vlassis & Sun, *Sobolev training of thermodynamic-informed neural networks for interpretable elasto-plasticity models with level set hardening*, CMAME 377, 113695, 2021. **§2.3 (training the evolving yield function as a level set) and §3 (the return-mapping implementation).**
 
-The level-set framework's central paper. §2.1–2.2 cover Sobolev training of a smooth functional; now read §2.3 and §3. (Section numbers as in the arXiv preprint, 2010.11265.)
+The level-set framework's central paper. §2.1–2.2 cover Sobolev training of a smooth functional; now read §2.3 and §3. (Section numbers as in the arXiv preprint, 2010.11265, which is free to read.)
 
-### [Primary] Steve Sun's L5 slides 29–48.
+*Source, not a reading:* L23's level-set and Eikonal material draws on Steve Sun's L5 slides 29–48. Sun's slides are not distributed to students.
 
-The theoretical core of the level-set / Eikonal framework.
+### [Optional] `module_4/readings/plasticity_and_return_mapping_primer.md`
+
+Background for L23–L24: one-dimensional plasticity with isotropic and kinematic hardening, the typical yield surfaces (von Mises, Tresca, Drucker–Prager, Mohr–Coulomb, modified Cam-Clay) with plots, and the J2 return mapping as MOOSE runs it for Lab 4's data. Companion: `module_4/examples/plot_yield_surfaces.py`.
 
 ### [Optional] Osher & Fedkiw, *Level Set Methods and Dynamic Implicit Surfaces*, Springer 2003.
 
