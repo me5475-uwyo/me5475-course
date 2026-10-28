@@ -15,4 +15,4 @@ labs/midterm/<your-github-handle>/
 
 The full specification, the three flavors, and the rubric are in `module_4/homework/midterm_project_spec.md`.
 Keep large files out of git (GitHub rejects files over 100 MB).
-Submit by opening a pull request from a branch named `midterm`. Due Sun Nov 1, 11:59 PM Mountain.
+Submit by opening a pull request from a branch named `midterm`. Due Sun Nov 8, 11:59 PM Mountain (extended from Sun Nov 1).
