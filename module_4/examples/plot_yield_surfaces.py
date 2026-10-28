@@ -1,7 +1,7 @@
 """
 plot_yield_surfaces.py -- Module 4, companion to readings/plasticity_and_return_mapping_primer.md (after L23).
 
-Draws the primer's six figures from the yield functions themselves, and checks the formulas they rely on (below).
+Draws the primer's seven figures from the yield functions themselves, and checks the formulas they rely on (below).
 Geometry and closed-form algebra only: no training, no MOOSE, no measured data. The parameter values below are
 illustrative choices in normalized units (stresses in units of the yield stress or of the cohesion), not material
 properties.
@@ -256,6 +256,93 @@ def figure_pi_plane():
     save(fig, "yield_surfaces_pi_plane.png")
 
 
+# --- figure 7: why von Mises is a cylinder, and a circle on the pi-plane ------------------------------------------
+def figure_vm_cylinder():
+    """(a) A flat cut through the hydrostatic axis: a stress point = its hydrostatic part (I1/3)(1,1,1) along the
+    axis + its deviator, perpendicular to it; von Mises is every point at the fixed distance |s| = sqrt(2/3) sy from
+    the axis, so the cylinder's wall appears as two parallel lines. Adding a pressure p = -I1/3 (compression
+    positive, as in the meridian-plane figure) slides a point along the wall.
+    (b) The pi-plane: the same circle, with the uniaxial-tension and pure-shear points on it."""
+    sy = 1.0
+    r = np.sqrt(2.0 / 3.0) * sy
+    e = ONES / np.sqrt(3.0)                                  # unit vector along the hydrostatic axis
+    P = np.array([sy, 0.0, 0.0])                             # uniaxial tension at yield
+    m_P = P.mean()                                           # mean stress I1/3 (tension positive); pressure = -m_P
+    H = m_P * ONES                                           # foot of the perpendicular on the axis
+    s = P - H                                                # the deviator
+    assert abs(s @ e) < TOL                                  # s is perpendicular to the axis
+    assert abs(np.linalg.norm(s) - r) < TOL                  # ...and its length is the cylinder's radius
+    assert abs(f_mises(P, sy)) < TOL                         # P is on the surface
+    for shift in (-1.0, 0.5, 2.0):                           # sliding along the axis keeps it on the surface
+        assert abs(f_mises(P + shift * ONES, sy)) < TOL
+    tau = sy / np.sqrt(3.0)                                  # pure shear at yield
+    Q = np.array([tau, -tau, 0.0])
+    assert abs(f_mises(Q, sy)) < TOL and abs(Q.sum()) < TOL
+
+    fig = plt.figure(figsize=(WIDTH, 3.5))
+    ax = fig.add_subplot(1, 2, 1)
+    # A flat cut through the hydrostatic axis and the point P: axis coordinate a = x.e, distance d = |x - (x.e)e|.
+    aP, dP = P @ e, np.linalg.norm(P - (P @ e) * e)
+    assert abs(dP - r) < TOL and abs(aP - np.sqrt(3.0) * m_P) < TOL
+    dpress = 0.75                                            # add a pressure (compression positive): P - dpress (1,1,1)
+    P2 = P - dpress * ONES
+    assert abs((-P2.mean()) - (-P.mean()) - dpress) < TOL    # the pressure p = -I1/3 really grows by dpress
+    aP2, dP2 = P2 @ e, np.linalg.norm(P2 - (P2 @ e) * e)
+    assert abs(dP2 - r) < TOL and abs(f_mises(P2, sy)) < TOL  # same distance, still on the surface
+    xs = (-1.05, 2.25)
+    ax.plot(xs, (0, 0), color=GOLD, lw=1.3, ls="--")
+    ax.text(xs[1], -0.08, "hydrostatic axis\n" + r"$\sigma_1=\sigma_2=\sigma_3$", color=GOLD, fontsize=8.5,
+            ha="right", va="top")
+    for sgn in (1, -1):
+        ax.plot(xs, (sgn * r, sgn * r), color=BROWN, lw=1.7)
+    ax.text(xs[0] + 0.02, -r - 0.07, "von Mises: the cylinder's wall (both lines)", color=BROWN, fontsize=8.5,
+            ha="left", va="top")
+    ax.plot(0, 0, marker="x", color=BROWN, ms=6, mew=1.4)
+    ax.text(-0.10, 0.07, "zero stress", color=GRAY, fontsize=8, ha="right", va="bottom")
+    ax.plot((0, aP), (0, dP), color=GRAY, lw=0.8, ls=":")                           # the sigma_1 axis
+    ax.text(0.30 * aP + 0.05, 0.30 * dP + 0.10, r"$\sigma_1$ axis", color=GRAY, fontsize=8.5, ha="right",
+            va="bottom")
+    ax.plot((0, aP), (0, 0), color=GOLD, lw=3.0, solid_capstyle="butt")             # hydrostatic part
+    ax.plot((aP, aP), (0, dP), color=RED, lw=2.2)                                   # deviator
+    mk = 0.07                                                                        # right-angle mark
+    ax.plot((aP - mk, aP - mk, aP), (0, mk, mk), color=RED, lw=0.8)
+    ax.plot(aP, dP, "o", color=RED, ms=4.5)
+    ax.text(aP, -0.09, "hydrostatic\npart", color=GOLD, fontsize=8.5, ha="right", va="top")
+    ax.text(aP + 0.06, 0.40 * dP, r"$\mathbf{s}$, length" + "\n" + r"$\sqrt{2/3}\,\sigma_y$", color=RED,
+            fontsize=8.5, ha="left", va="center")
+    ax.text(aP + 0.10, dP + 0.07, "uniaxial tension", color=RED, fontsize=8.5, ha="left", va="bottom")
+    ax.annotate("", xy=(aP2, dP2), xytext=(aP - 0.06, dP), arrowprops=dict(arrowstyle="-|>", color=GRAY, lw=1.0))
+    ax.plot(aP2, dP2, "o", mfc="white", mec=RED, ms=4.5)
+    ax.text(aP2 - 0.08, dP + 0.07, "add pressure (squeeze):\nstill on the wall", color=GRAY, fontsize=8,
+            ha="left", va="bottom")
+    ax.set_xlim(-1.1, 2.3); ax.set_ylim(-1.15, 1.35)
+    ax.set_aspect("equal")
+    ax.axis("off")
+    ax.set_title("(a) A cut through the axis")
+
+    ax = fig.add_subplot(1, 2, 2)
+    Xm, Ym = pi_section(lambda sg: f_mises(sg, sy))
+    assert np.allclose(np.hypot(Xm, Ym), r, atol=1e-9)       # a circle of radius sqrt(2/3) sy
+    draw_pi_axes(ax, 1.05)
+    ax.plot(Xm, Ym, color=BROWN, lw=1.7)
+    XP, YP = s @ UX, s @ UY                                  # uniaxial tension: on the sigma_1 direction
+    XQ, YQ = Q @ UX, Q @ UY
+    ax.annotate("", xy=(XP, YP), xytext=(0, 0), arrowprops=dict(arrowstyle="-|>", color=RED, lw=1.4,
+                shrinkA=0, shrinkB=0))
+    ax.plot([XP], [YP], "o", color=RED, ms=4.5)
+    ax.text(XP + 0.07, YP * 0.45, r"$|\mathbf{s}| =$" + "\n" + r"$\sqrt{2/3}\,\sigma_y$", color=RED, fontsize=9,
+            ha="left", va="center")
+    ax.annotate("uniaxial\ntension", xy=(XP, YP), xytext=(-0.62, 1.02), color=RED, fontsize=8.5, ha="right",
+                va="center", arrowprops=dict(arrowstyle="-", color=RED, lw=0.7, shrinkA=2, shrinkB=4))
+    ax.plot([XQ], [YQ], "s", color=BROWN, ms=4.5)
+    ax.annotate("pure shear\n" + r"$\tau = \sigma_y/\sqrt{3}$", xy=(XQ, YQ), xytext=(0.98, 1.02), color=BROWN,
+                fontsize=8.5, ha="left", va="center",
+                arrowprops=dict(arrowstyle="-", color=BROWN, lw=0.7, shrinkA=2, shrinkB=4))
+    ax.text(0.0, -1.22, "every pressure p gives this same circle", color=GRAY, fontsize=8.5, ha="center")
+    ax.set_title("(b) Down the axis: the π-plane, a circle")
+    save(fig, "yield_vm_cylinder_pi_plane.png")
+
+
 # --- figure 4: plane stress -------------------------------------------------------------------------------
 def figure_plane_stress():
     sy = 1.0
@@ -426,3 +513,4 @@ if __name__ == "__main__":
     figure_plane_stress()
     figure_meridian()
     figure_hardening()
+    figure_vm_cylinder()
