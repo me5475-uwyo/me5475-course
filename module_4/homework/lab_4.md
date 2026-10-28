@@ -6,7 +6,7 @@
 **Weight:** 30% / 9 ≈ 3.33% of total course grade (all nine labs are weighted equally)
 **Submission:** Pull request from branch `lab_4` in your instructor-created private repository in the `me5475-uwyo` course organization (`me5475-uwyo/me5475-<your-github-username>`).
 
-> **Overlaps the midterm project.** Lab 4 is open while you work on the midterm and is due after it. Lab 4 is smaller scope on a narrower problem; the midterm is open-ended. Plan accordingly.
+> **Overlaps the midterm project.** Lab 4 is open while you work on the midterm and is due two days before it (Lab 4 Fri Nov 6, midterm Sun Nov 8). Lab 4 is smaller scope on a narrower problem; the midterm is open-ended. Plan accordingly.
 
 ---
 
@@ -91,7 +91,7 @@ What to expect (measured on the course data, `measured_results.md` §1):
 
 **3c.** Hyperparameter exploration. Vary `--hidden`, `--layers`, `--batch-size` (whole trajectories per optimizer step; default 16, and `0` uses all 160 training trajectories at once). Give each run its own `--out` and `--save` so runs do not overwrite each other; to run one as a job, edit the `lstm)` line in a copy of `train_constitutive.sbatch`. What configuration gives the lowest MSE on the held-out trajectories? Because you are choosing by that score, the held-out set now acts as a *validation* set for this exploration: the winner's score is optimistic, not an unbiased test result. Say so when you report it. Document briefly in `prompts_task3.md`.
 
-**3d.** Report final test MSE. Compare to (a) stateless MLP, (b) stateless MLP with ε^p, (c) the LSTM with your best HP (a validation-selected score; see 3c). With the course data and the default settings, our printed numbers were identical on every ARCC node we used. The course's numbers and analysis are added to `measured_results.md` §2 after the lab closes (Fri Nov 6).
+**3d.** Report final test MSE. Compare to (a) stateless MLP, (b) stateless MLP with ε^p, (c) the LSTM with your best HP (a validation-selected score; see 3c). With the course data and the default settings, our printed numbers were identical on every ARCC node we used. The course's numbers and analysis are added to `measured_results.md` §2 after the midterm closes (Sun Nov 8, 11:59 PM Mountain; Lab 4 itself is still due Fri Nov 6).
 
 ### Task 4 (stretch, +15 bonus) — Level-set yield surface
 
