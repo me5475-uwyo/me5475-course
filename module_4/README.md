@@ -22,7 +22,7 @@ By the end of M4 students have:
 - Implemented Sobolev H¹ training that fits energy and stress together (H², which adds stiffness, is discussed but not implemented in the course code).
 - Understood Steve's level-set yield surface reformulation and trained a yield-surface neural network with autograd-managed gradients.
 
-**Module deliverable (Lab 4)** is a J2 plasticity surrogate. **Midterm project spec** releases on L19 (first day of M4, Fri Oct 16); due Sun Nov 1, 11:59 PM MT. No midterm presentation (decision 2026-10-03).
+**Module deliverable (Lab 4)** is a J2 plasticity surrogate. **Midterm project spec** releases on L19 (first day of M4, Fri Oct 16); due Sun Nov 8, 11:59 PM MT (extended from Sun Nov 1 on Oct 26). No midterm presentation (decision 2026-10-03).
 
 This module is the heaviest single citation of Steve Sun's *ML for Mechanics* lectures (L3, L4, L5, L6). The "three ways to enforce a constraint" taxonomy is L3; the RNN-for-plasticity content is L4; the level-set yield surface formulation is L5+L6.
 
@@ -51,7 +51,7 @@ module_4/
 │   └── train_constitutive.sbatch          ARCC SLURM template (CPU partition)
 ├── homework/
 │   ├── lab_4.md                           J2 plasticity surrogate (Wed Oct 14 -> Fri Nov 6)
-│   ├── midterm_project_spec.md            three flavors, due Sun Nov 1
+│   ├── midterm_project_spec.md            three flavors, due Sun Nov 8
 │   └── starter_prompts.md
 └── readings/
     ├── reading_list.md
