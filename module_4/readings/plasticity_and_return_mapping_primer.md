@@ -90,6 +90,22 @@ stresses, so it can be drawn in their three-dimensional space and viewed in two 
 criterion** generalizes von Mises to orthotropic materials, with a different yield stress in each material direction.
 The course's MOOSE example is the walkthrough's §5.
 
+**Why von Mises is a cylinder, and a circle on the π-plane.** Four steps, in principal stresses (σ₁, σ₂, σ₃):
+
+1. **Split the stress into a hydrostatic part and a deviator.** σ = (I₁/3) **I** + s = −p **I** + s, with tr s = 0 and p = −I₁/3 the pressure, positive in compression, as in the meridian-plane figure below. In principal stresses this reads (σ₁, σ₂, σ₃) = (I₁/3)(1, 1, 1) + (s₁, s₂, s₃), with s₁ + s₂ + s₃ = 0. That sum is the dot product of s with (1, 1, 1), so **s is perpendicular to the hydrostatic axis**. The hydrostatic part moves a stress point *along* the axis; the deviator is its perpendicular offset *from* the axis. The length of that offset is |s| = √(s₁² + s₂² + s₃²), the distance from the axis.
+2. **Von Mises sees only that distance.** J₂ = ½ s:s = ½ |s|², so q = √(3J₂) = √(3/2) |s|.
+3. **Yield is a fixed distance from the axis.** q = σ_y is the same as |s| = √(2/3) σ_y. Nothing in it depends on I₁, that is, on the pressure, so every point along the axis is treated alike: a **cylinder** around it. Nothing depends on the direction around the axis (the Lode angle, which needs the third invariant J₃), so its section is **round**. Cut it perpendicular to the axis, which is what the π-plane does, and it is a **circle of radius √(2/3) σ_y**.
+4. **Check it.** Uniaxial tension at yield, σ = (σ_y, 0, 0): I₁/3 = σ_y/3, s = (2/3, −1/3, −1/3) σ_y, and |s| = σ_y √(6/9) = √(2/3) σ_y. In pure shear, σ = (τ, −τ, 0) is already a deviator, |s| = √2 τ, so yield is at τ = σ_y/√3, the shear yield stress quoted under plane stress below.
+
+**The physics behind the two "nothing depends on" statements:**
+- **No pressure:** metals yield by slip on crystal planes, which shear drives. An equal pressure from all sides produces no shear.
+- **No direction:** von Mises depends on J₂ alone, an assumption of the criterion, not a law of nature. Tresca keeps the dependence on direction and is a hexagon. Drucker–Prager adds I₁ and is a cone.
+
+The same picture explains why Lab 4's toy is a circle: it is a stand-in for this deviatoric circle, drawn in a plain
+(σ_x, σ_y) plane where its signed distance is exact.
+
+![Two panels. Panel (a), a flat cut through the hydrostatic axis: the axis is a horizontal dashed line through a cross at zero stress, and the von Mises cylinder appears as two parallel horizontal lines, one above and one below it, at distance square root of 2/3 times sigma_y. The uniaxial-tension point sits on the upper line. From zero stress, a thick segment along the axis is its hydrostatic part. From there a vertical red segment, at a right angle to the axis, reaches the point: the deviator s, of length square root of 2/3 sigma_y. A dotted line from zero stress to the point is the sigma 1 axis. An arrow from the point leftward along the upper line to an open circle, labeled add pressure (squeeze), shows that adding a pressure slides the point parallel to the axis and keeps it on the wall. Panel (b), the pi-plane, with the projected principal axes sigma 1 (up), sigma 2 (lower left) and sigma 3 (lower right), 120 degrees apart: the von Mises circle around the center, a red radius up to the uniaxial-tension point on the sigma 1 direction, labeled |s| = square root of 2/3 sigma_y; leader lines from labels outside the circle to the uniaxial-tension point and to a square marker on the circle for pure shear at tau = sigma_y over square root of 3; and the note that every pressure gives this same circle.](figures/yield_vm_cylinder_pi_plane.png)
+
 ![Two pi-plane panels, each with the projected principal axes sigma 1 (up), sigma 2 (lower left) and sigma 3 (lower right), 120 degrees apart, and a cross at the hydrostatic axis. Panel (a), metals with the same uniaxial yield stress: the von Mises circle (solid) and the Tresca regular hexagon (dashed) inside it, touching the circle at its six corners, which lie on and between the axes. Panel (b), frictional materials at I1 = 0: the Mohr-Coulomb irregular hexagon (solid), with three outer corners and three inner corners; a dashed Drucker-Prager circle through the outer corners, enclosing the hexagon; and a dash-dot Drucker-Prager circle through the inner corners, which the hexagon's edges cross slightly.](figures/yield_surfaces_pi_plane.png)
 
 **Read the π-plane panels:**
