@@ -1,7 +1,7 @@
 # Midterm Project — Specification
 
 **Released:** Fri Oct 16, 2026
-**Due:** Sun Nov 1, 2026, 11:59 PM MT
+**Due:** Sun Nov 8, 2026, 11:59 PM MT (extended from Sun Nov 1 on Oct 26)
 **Weight:** 25% of total course grade
 **Format:** GitHub repo + 4–6 page IMRaD report (no presentation)
 **Submission:** Pull request from branch `midterm` in your private course repository (`me5475-uwyo/me5475-<your-github-username>`), with your work in `labs/midterm/<your-github-handle>/`.
@@ -142,15 +142,15 @@ For Flavor A, the physics constraint is the PDE residual together with your boun
 
 - **Mon Oct 19 (L20):** flavor choice locked.
 - **Wed Oct 21 (L21):** if Flavor C, proposal approved.
-- **Sun Nov 1, 11:59 PM MT:** project due.
+- **Sun Nov 8, 11:59 PM MT:** project due (extended from Sun Nov 1).
 
-Reach out to the instructor throughout the window (about two weeks, Oct 16 – Nov 1). The Office Hours times during Wks 8-9 are dedicated to midterm consultation.
+Reach out to the instructor throughout the window (about three weeks, Oct 16 – Nov 8). The Office Hours times during Wks 8–10 are dedicated to midterm consultation.
 
 ---
 
 ## Some honest advice
 
-- **Choose the flavor that excites you most.** About two weeks is long enough to do a good job, short enough that low motivation will kill you.
+- **Choose the flavor that excites you most.** About three weeks is long enough to do a good job, short enough that low motivation will kill you.
 - **Start early. The Optuna sweep + retraining is the slow step**, not the writing. Get the sweep running by the end of Week 8 (Fri Oct 23) if possible.
 - **Use agents extensively. Log the prompts.** The lead+review pattern saves you from your own bugs.
 - **Compare to a baseline, honestly.** A single error number means little on its own. Report the metric, the evaluation set, how accurate your reference is and how you verified it, the method's limitations, and measured costs where they matter. Then explain what the method actually bought you, or why it fell short: a well-documented negative result is a good result here. The comparison is the contribution.
