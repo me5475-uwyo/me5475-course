@@ -210,10 +210,11 @@ yield.
 **"Test MSE"** is the scripts' own number: the mean squared error on the test trajectories, with each stress
 component standardized by its training-set mean and std.
 
-### 2.1–2.2 · Results and analysis — posted after Lab 4 closes
+### 2.1–2.2 · Results and analysis — posted after the midterm closes (Sun Nov 8)
 
 The Task 2–3 test errors and the analysis of how well each model reproduces the history are added to this
-section after Lab 4 closes (Fri Nov 6). Until then, your own runs are the result.
+section after the midterm closes (Sun Nov 8, 11:59 PM Mountain; extended on Oct 26 from Lab 4's close, Fri Nov 6, because
+the midterm's surrogate flavor reuses Lab 4). Until then, your own runs are the result.
 
 ### 2.3 · Job-script check
 
@@ -419,7 +420,7 @@ median 1.17).
 
 ### 5.2 · Tasks 2 and 3 (was §2.1–§2.2)
 
-Posted after Lab 4 closes (Fri Nov 6), together with §2.1–§2.2.
+Posted after the midterm closes (Sun Nov 8), together with §2.1–§2.2.
 
 ## 6 · Numbers stated before this validation, checked
 
@@ -588,3 +589,165 @@ measured. These are exact tensor operations, rounded for printing, and they back
 
 The full output is in `team/reviews/2026-10-19_L20_fix_evidence/frame_indifference_checks_v3.out`. Items 1–11 are byte-identical to `frame_indifference_checks_v2.out`, and items 1–9 to `frame_indifference_checks.out`.
 
+---
+
+## 9 · Learned yield function in a MOOSE radial-return sandbox
+
+**Status (updated Oct 27 after the Reviewer's R2 recheck):**
+- **Content cleared:** the Canvas page content and the instructor-run demonstration (R2: SHIP).
+- **Shared package:** cleared (R2: SHIP WITH FIXES). Its one condition is now met: on Oct 27 the non-owner course account `me5475-testuser` verified access and ran case A, job 24908880, with identical differences (`team/reviews/2026-10-27_levelset_R1_fix_evidence/nonowner_test/`).
+
+*Historical verdict, kept:* "Measurement record only — demo REVISE, not cleared for classroom use or distribution
+(Reviewer, 2026-10-27)." That initial verdict applied to the first review; B1–B4 and R1-1/R1-2 are now closed.
+These are results from completed instructor sandbox runs. The numerical comparisons below were independently
+checked against the supplied CSVs. See `team/reviews/2026-10-27_reviewer_levelset_moose_demo.md` for the
+finite-output guard, sandbox build guard, normal-angle metric and scope findings, and for their closure in the R1
+and R2 rechecks. Recording these results does not release the code or change any earlier
+Lab 4 result/release status. This is a separate seven-input model, not a new performance claim for Lab 4's model.
+
+### 9.1 · Provenance and scope
+
+- **Author/run origin:** `[fallback]` Co-Worker, Oct 26–27, 2026, ARCC MedicineBow. Build job **24886177**;
+  final validation **24887725**; elastic reproducibility check **24888731**.
+- **Code:** `module_4/examples/levelset_plasticity/`. MOOSE pinned source **437fbe5082**. Submitted C++ SHA-256
+  `a0c8ea300a0f36afe89fef4d89d33f83f71c1287d45dd0435351d98e282d8211`;
+  trainer `1a38271b8545464d3aa861b275d8edb38488dc50eb4477aefbce23481aa893e3`.
+- **Run artifacts:** the instructor's ARCC sandbox, run folder `run_24887725`. This is an instructor sandbox;
+  the student production executable does not contain this material. No production change is authorized here.
+- **Models:** learned `levelset_j2.pt`, SHA-256
+  `0ea6db248c81207ec37699f6f5f4ef6798531fb63ff9ad2fa30ad5c628d80a57`;
+  exact `exact_j2_phi.pt`, SHA-256
+  `2b1497b49bec4dd110e34c4afe14e03ed4c1edc89505bc07e2f3c8614e4f27ef`.
+- **Primary evidence:** `team/reviews/2026-10-26_levelset_moose_demo_evidence/` (CSVs, logs, summary, training
+  report, plots). Independent calculations and full reviewed-file hashes:
+  `team/reviews/2026-10-27_levelset_moose_reviewer_evidence/`.
+- **What is tested:** a learned yield/consistency residual along **prescribed J2 radial flow**, using MOOSE's
+  scalar return solve and elastic global tangent. The network gradient differentiates that scalar path; it does
+  not select the flow direction. This is not the general learned-normal/Hessian return algorithm from L24.
+- **Exact control:** φ = |s| − √(2/3)(σ_y + h p), with E = 100, ν = 0.3, σ_y = 1, h = 5. On the admissible
+  radial path its scaled residual and derivative reproduce the built-in J2 model. Here p is accumulated
+  equivalent plastic strain.
+
+### 9.2 · Single-element histories
+
+Each case has **60 increments / 61 recorded states through t = 3**, covering three reversed cycles. All nodes
+are displacement constrained; this checks the material update, not a global equilibrium iteration. Stress error
+is max |σ_candidate − σ_builtin| over all times and components xx, yy, xy, zz, divided by the built-in maximum
+absolute stress over the same set. The percentages are not pointwise relative errors near zero stress.
+
+| Case: amplitudes (ε_xx, ε_yy, γ_xy) | Learned stress error | Exact-φ stress error (fraction) | Final p, built-in | Final p, learned |
+|---|---:|---:|---:|---:|
+| Elastic (0.01, 0, 0) | 0 | 0 | 0 | 0 |
+| A (0.02, −0.01, 0.015) | 0.119748% | 5.99 × 10⁻¹⁵ | 0.095996637 | 0.095851955 |
+| B (0.04, 0, 0) | 0.057629% | 2.21 × 10⁻¹⁵ | 0.157327926 | 0.157261731 |
+
+### 9.3 · Plate with a hole
+
+The quarter-annulus mesh has **512 QUAD4 elements** (16 graded radial × 32 angular divisions), plane strain,
+and four MPI ranks with PJFNK. There are **30 increments / 31 states**, Δt = 0.05, to t = 1.5. Load S rises
+0 → 0.8 through t = 1, then drops to **0.4**, so the final state is **partially unloaded**. Its stresses include
+the remaining applied-load contribution; this run does not directly measure a zero-load residual-stress field.
+
+For each field below, error = maximum absolute elementwise difference / maximum absolute built-in field value
+at that snapshot. Element IDs and coordinates were independently matched before comparison.
+
+| Snapshot | Learned p error | Learned σ_xx error | Learned von Mises error | Plastic-element sets |
+|---|---:|---:|---:|---|
+| Peak, t = 1, S = 0.8 | 0.489456% | 0.249857% | 0.330658% | Same 66 / 512 |
+| Final, t = 1.5, S = 0.4 | 0.489456% | 0.442128% | 0.641278% | Same 66 / 512 |
+
+“Plastic element” here means accumulated p > 10⁻¹², not current plastic flow. The supplied intermediate history
+reports a one-element set difference at t = 0.65, 0.70, and 0.95; equal endpoint sets do not imply identical
+sets throughout loading. First yield is at **t = 0.55** in all three runs. Nonlinear iteration counts agree
+step by step, totaling **81** for each run. The independently recomputed maximum absolute ligament-force
+imbalance in the learned run is **3.76683 × 10⁻⁴**. No mesh-convergence claim is made.
+
+Exact-φ peak/final element-field discrepancies reach **6.79 × 10⁻¹⁴**; the supplied aggregate comparison across
+other recorded quantities reaches about **7.52 × 10⁻¹⁴**. These establish round-off agreement for these runs.
+
+### 9.4 · Derivatives, training, and runtime qualifications
+
+The class was run with `check_derivative=true`, comparing its autograd residual derivative with a central
+difference at step size 10⁻⁷. The exact expected derivative is **−1 − h/(3G) = −1.0433333333333334**.
+Recorded quadrature-point minimum derivatives agree with that constant to about **3.4 × 10⁻¹⁴**; the maximum
+FD discrepancies in the supplied diagnostics are about **3.6 × 10⁻¹¹** (exact φ) and **2.1 × 10⁻¹⁰** (learned φ).
+These are checks of the scalar residual derivative, not a consistent tangent or Hessian validation.
+
+The ARCC training report records a float64 tanh MLP with **3 × 64** hidden units, seed **5475**, **20,000** training
+samples, **10,000** general held-out samples, and **10,000** near-surface held-out samples. It used **4,000** Adam
+epochs and **2,000** L-BFGS iterations, taking **347.5 s** (PyTorch **2.5.1+cu121**, CPU). Reported value errors:
+
+| Held-out set | Maximum absolute φ error | RMS φ error |
+|---|---:|---:|
+| General | 0.06317 | 0.003602 |
+| Near surface, radial offset within ±0.05 | 0.01184 | 0.002515 |
+
+Those training statistics are from the supplied report/logs, not a fresh Reviewer retraining. The cluster evidence
+records identical model hashes on retraining and zero export/reload value discrepancy. The compact local evidence
+does not include model binaries. Physical normal-angle statistics are **withheld pending correction** of the
+Voigt-covector metric. The training sampler excludes sufficiently small deviatoric radii; deep-elastic states
+are extrapolation despite the reported upper stress/p envelopes fitting the parameter ranges.
+
+Final-job wall times: plate **8.43 s built-in / 89.65 s learned / 124.22 s exact φ**; single-element cases roughly
+**2.1–2.9 s** each. The TorchScript runs include derivative/FD diagnostics, so these are validation timings rather
+than isolated inference costs. Precompute the plate for a five-minute class presentation.
+
+Elastic single-element comparisons are identical. Elastic plate postprocessor CSVs also compare identically;
+the supplied reproducibility logs report elementwise identity on one rank and differences up to roughly
+**10⁻¹⁴** on four ranks. The cause of those small parallel differences has not been established. These statements
+have this run-specific scope and do not promise bitwise equality for arbitrary MPI configurations.
+
+
+### 9.5 · Plate force–displacement and full fields (added Oct 27, `[fallback]` Co-Worker; Reviewer R2: cleared)
+
+From the same run (job **24887725**) Exodus files `plate/{builtin,learned}/out.e`, by
+`module_4/examples/levelset_plasticity/plot_plate_comparison.py` (output `plate_comparison.json`; copies in
+`team/reviews/2026-10-26_levelset_moose_demo_evidence/plots_page/`; the Oct 27 relabeled figures, numerically
+identical, are in `team/reviews/2026-10-27_levelset_R1_fix_evidence/plots_page/`). **F** is the recovered ligament
+force, the side integral of the recovered σ_xx field on x = 0 (unit thickness). It approximates the applied resultant
+but is not exactly equilibrated: built-in F = **0.799624** at S = 0.8 and **0.399764** at S = 0.4 (the imbalance
+recorded in §9.3; Reviewer R1 read of the Exodus files). **δ** is the load-weighted mean of u_x on the outer arc,
+∫cos θ u_x dθ / ∫cos θ dθ, by trapezoidal integration of nodal values. In the continuum the traction S cos θ on the
+unit arc has resultant Q = S and work increment Q dδ; F stands in for Q in the plots. **δ − F/k_el** is a reported
+proxy for the nonlinear part of δ. Substituting S for F is not numerically neutral: with k_el recalibrated from S, the
+built-in proxy at peak is 3.15647 × 10⁻⁵ (Reviewer R1), not the 3.2277 × 10⁻⁵ below.
+
+| Quantity | Built-in J2 | Learned φ | Difference |
+|---|---:|---:|---:|
+| Elastic stiffness k_el = F/δ, first step | 135.654 | — | — |
+| First yield | S = 0.44 (t = 0.55) | S = 0.44 | same step |
+| δ at peak (t = 1, S = 0.8) | 5.92685 × 10⁻³ | 5.92722 × 10⁻³ | +0.0062% |
+| δ after partial unloading (t = 1.5, S = 0.4) | 2.97921 × 10⁻³ | 2.97958 × 10⁻³ | +0.0124% |
+| Largest step-by-step relative difference in δ | | | 0.0124% |
+| Nonlinear proxy δ − F/k_el, at peak and after unloading | 3.2277 × 10⁻⁵ | 3.2650 × 10⁻⁵ | +1.16% |
+
+The nonlinear proxy is about 0.5% of δ at peak: the plastic zone is small (66 of 512 elements), so the global curve
+is nearly linear and the learned φ's ~1% larger proxy is diluted to ~0.01% in δ. Partial unloading is elastic:
+δ − F/k_el varies by at most 6.1 × 10⁻¹⁴ (built-in) and 3.4 × 10⁻¹⁴ (learned) from t = 1 to 1.5, and no element's p
+changes (Reviewer R1).
+
+Fields, max |learned − built-in| over the mesh divided by the built-in field's max at that snapshot (|u| nodal; von
+Mises and p per element):
+
+| Snapshot | \|u\| | von Mises | p | Elements with p > 10⁻¹² |
+|---|---:|---:|---:|---|
+| Peak, t = 1, S = 0.8 | 0.022% (1.67 × 10⁻⁶ of 7.716 × 10⁻³) | 0.331% | 0.489% | 66 / 66, 0 disagree |
+| After partial unloading, t = 1.5, S = 0.4 | 0.043% (1.68 × 10⁻⁶ of 3.890 × 10⁻³) | 0.641% | 0.489% | 66 / 66, 0 disagree |
+
+The von Mises and p columns reproduce §9.3 from the Exodus element fields. The largest stress differences sit at the
+elastic–plastic boundary of the zone at the hole.
+
+### 9.6 · Normal angles in the tensor metric (Reviewer B3, recomputed Oct 27; Reviewer R1: B3 closed)
+
+`team/reviews/2026-10-26_levelset_moose_demo_evidence/normal_angle_recheck.py` reloads the shipped `levelset_j2.pt`
+(SHA-256 `0ea6db24…`, as §9.1) on ARCC and regenerates the trainer's held-out sets (same seed and draw order; their
+value errors reproduce the training report to every printed digit). The angle between the network's and the
+target's stress gradients uses the dual metric W = diag(1, 1, 1, ½, ½, ½) on the six Voigt covector entries.
+
+| Held-out set | Tensor-metric angle, max | rms | (Unweighted coordinate angle, max / rms) |
+|---|---:|---:|---|
+| General, 10 000 | 4.06° | 0.81° | 4.10° / 0.82° |
+| Near surface, ±0.05, 10 000 | 2.22° | 0.69° | 2.20° / 0.70° |
+
+These describe the network's gradient accuracy. In this class the flow direction is MOOSE's radial formula, not the
+network's gradient.
