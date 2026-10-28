@@ -1,7 +1,7 @@
 # Lab 5 — Your Lab 1 Network as a Material Inside MOOSE
 
 **Module:** 5 — NN-FEA Integration with MOOSE
-**Released:** Wed Oct 28, 2026 (the day Lecture 24 is taught)
+**Released:** Tue Oct 27, 2026 (the day before Lecture 24)
 **Due:** Wed Nov 11, 2026, 11:59 PM Mountain Time (the day Lecture 30 is taught)
 **Weight:** 30% / 9 ≈ 3.33% of total course grade (all nine labs are weighted equally)
 **Submission:** Pull request from branch `lab_5` in your instructor-created private repository in the `me5475-uwyo` course organization (`me5475-uwyo/me5475-<your-github-username>`).
