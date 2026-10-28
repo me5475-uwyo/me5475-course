@@ -24,7 +24,7 @@ M5 students have:
 
 Students do not write C++. They export a file, change one block of an input file, and run a job.
 
-**Module deliverable (Lab 5):** released Wed Oct 28 (L24), due Wed Nov 11 (L30). Lab 0's plate with the student's
+**Module deliverable (Lab 5):** released Tue Oct 27 (the day before L24), due Wed Nov 11 (L30). Lab 0's plate with the student's
 own Lab 1 network as its material, compared with the elastic run; optional three-way comparison with the Lab 3 PINN
 on Lab 3's plate.
 
@@ -62,7 +62,7 @@ module_5/
 │   └── comparison_three_methods.py            plate mode: elastic vs network (same mesh);
 │                                              grid mode: Lab 3 reference vs network vs PINN (Lab 3's plate)
 ├── homework/
-│   ├── lab_5.md                               Wed Oct 28 -> Wed Nov 11
+│   ├── lab_5.md                               Tue Oct 27 -> Wed Nov 11
 │   └── starter_prompts.md
 └── readings/
     ├── reading_list.md
