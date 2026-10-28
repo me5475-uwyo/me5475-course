@@ -291,7 +291,7 @@ Answer all five:
 
 ## What this lab leads into
 
-- **Midterm project (due Sun Nov 1).** The full spec is released at the start of M4. The "PINN inverse problem" option builds directly on Task 5; tuning is recommended for every option.
+- **Midterm project (due Sun Nov 8, extended from Sun Nov 1).** The full spec is released at the start of M4. The "PINN inverse problem" option builds directly on Task 5; tuning is recommended for every option.
 - **Module 5.** You will deploy your Lab 1 constitutive network inside MOOSE as the material, and compare it with MOOSE's elastic material on Lab 0's plate. An optional task then puts MOOSE, that network and your Lab 3 PINN side by side on this lab's plate.
 - **Module 7.** Operator learning generalizes the parametric PINN from a few numbers, such as (E, ν), to whole input functions. Lab 7 trains DeepONet and FNO on the 1-D Burgers' equation.
 
