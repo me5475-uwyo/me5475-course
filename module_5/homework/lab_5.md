@@ -39,8 +39,8 @@ Two things to know before you start:
 
 ## Before you start
 
-- **Your Lab 1 files:** `labs/lab_1/<you>/training/checkpoints/mlp_constitutive.pt` (the checkpoint) and
-  `labs/lab_1/<you>/data_generation/data/single_element.csv` (the data it was trained on).
+- **Your Lab 1 files:** `labs/lab_1/<your-github-username>/training/checkpoints/mlp_constitutive.pt` (the checkpoint)
+  and `labs/lab_1/<your-github-username>/data_generation/data/single_element.csv` (the data it was trained on).
 - **On ARCC:** `git pull` in your repository for the `module_5/` files, and `source /project/me5475/setup5475.sh`
   in every session (it gives you the course Python with torch 2.5.1).
 - **The executable:** `/project/me5475/software/moose_torch/me5475/me5475-opt`. It is the course MOOSE build that
@@ -107,14 +107,18 @@ metrics are the record. The `.gitignore` line in "How to submit" keeps them out.
 **1a.** Set up the folders and copy your Lab 1 checkpoint and data next to the two scripts:
 
 ```bash
-cd ~/me5475-<your-github-username> && git pull
-mkdir -p labs/lab_5/<you>/{export,moose_run,comparison,extrapolation}
-cd labs/lab_5/<you>/export
+U=YOUR_GITHUB_USERNAME            # EDIT first: your GitHub username, no angle brackets
+cd ~/me5475-"$U" && git pull
+mkdir -p labs/lab_5/"$U"/{export,moose_run,comparison,extrapolation}
+cd labs/lab_5/"$U"/export
 cp ../../../../module_5/examples/export_torchscript.py ../../../../module_5/examples/verify_torchscript.py .
-cp ../../../lab_1/<you>/training/checkpoints/mlp_constitutive.pt .
-cp ../../../lab_1/<you>/data_generation/data/single_element.csv .
+cp ../../../lab_1/"$U"/training/checkpoints/mlp_constitutive.pt .
+cp ../../../lab_1/"$U"/data_generation/data/single_element.csv .
 source /project/me5475/setup5475.sh
 ```
+
+Set `U` once per terminal session; every later line uses it. (`<your-github-username>` elsewhere in this handout means
+the same name, written out.)
 
 **1b.** Export (seconds; the login node is fine):
 
@@ -443,11 +447,12 @@ As in Labs 1–4: a pull request from branch `lab_5`, with your files under `lab
 (`module_0/readings/git_submission_guide.md` walks through it).
 
 ```
+U=YOUR_GITHUB_USERNAME            # EDIT first, as in Task 1a
 git checkout main && git pull
 git checkout -b lab_5
-# ... work in labs/lab_5/<your-github-username>/ ...
-printf '*.e\n*.log\n*.time\n__pycache__/\n*_grid.csv\n' > labs/lab_5/<your-github-username>/.gitignore
-git add labs/lab_5/<your-github-username>
+# ... work in labs/lab_5/$U/ ...
+printf '*.e\n*.log\n*.time\n__pycache__/\n*_grid.csv\n' > labs/lab_5/"$U"/.gitignore
+git add labs/lab_5/"$U"
 git commit -m "Lab 5: what you did"
 git push -u origin lab_5
 # then open the pull request on github.com -- that PR is the submission
