@@ -15,7 +15,7 @@ The syllabus, deadlines, and announcements live on Canvas — Canvas is authorit
    ```bash
    ssh <your-username>@medicinebow.arcc.uwyo.edu
    ```
-   If it fails, tell the instructor — no deadline penalises you for access you don't have yet.
+   If it fails, tell the instructor — no deadline penalizes you for access you don't have yet.
 3. **Read the current lab** in `module_<n>/homework/`, and work in `labs/lab_<n>/<your-handle>/`.
 
 ## Layout
@@ -52,14 +52,22 @@ complete log. Full policy: syllabus §8.
 
 ## Staying up to date
 
-New modules are published to the course repository during the semester. Add it once as an
-`upstream` remote, then pull when a module is released:
+New material is published during the semester, and it arrives on **your repository's `main` on GitHub**: the course
+updates every student repository for you. You only need to pull it, in each clone you use (laptop and ARCC):
 
 ```bash
-git remote add upstream https://github.com/me5475-uwyo/me5475-course.git   # once
+git status                                          # first: commit the lab files you want to keep
 git checkout main
-git pull upstream main
+git pull
+git checkout lab_5 && git merge --no-edit main      # only to bring it into a lab branch you already started
 ```
+
+In these commands, `lab_5` and `lab_6` are examples: type your own lab's number. Start a new lab from an updated
+`main`: `git checkout main && git pull && git checkout -b lab_6`.
+Why a new file can seem "missing", and more: `module_0/readings/git_basics_and_course_repo_primer.md`.
+
+You don't need an `upstream` remote. If you added one earlier, don't use it: `git pull upstream main` can stop with
+"refusing to merge unrelated histories". Don't force it with `--allow-unrelated-histories`; use `git pull` on `main`.
 
 ## Where to ask
 
