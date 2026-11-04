@@ -273,8 +273,9 @@ every postprocessor, from `comparison_three_methods.py` on the job 22977474 outp
 
 - **A failed Steady run aborts** ("Aborting as solve did not converge"). Its CSV and Exodus hold only the t = 0 state,
   so a failed run cannot be compared, and `run_nn_simulation.sbatch` stops before the elastic run.
-- **The final input stops Newton after 15 iterations,** so the 5e-3 to 1e-1 runs would now stop sooner. Their times
-  with that limit are (not measured).
+- **The final input stops Newton after 15 iterations.** That cap would truncate the 5e-3 (50 iterations) and 3e-2
+  (23) failures; the 1e-2 (14) and 1e-1 (13) failures ended before it. Their times with that limit are (not
+  measured).
 - **The 2e-3 run** converged, but only part of the plate's final element-average strains lay inside the full
   dataset hull (value held, §4.2).
 - **What the failures show:** Newton did not converge from 5e-3 to 1e-1 with this solver, load step and zero initial
@@ -432,3 +433,53 @@ C = confirmed, X = contradicted, U = not measured. Rows whose measured value is 
   derivative. It does not show that Newton converges at larger loads. At 4× this load (job 22960112) the first full
   step failed and was cut back; one of 39 checks gave 0.0113, at the 4th iterate of that failed step. The other 38
   were ≤ 8.6e-7. The cause of the 0.0113 was not isolated.
+
+---
+
+## 10 · L25 J2 tangent comparison: consistent vs elastic tangent (measured Oct 30, 2026; Reviewer R1: SHIP for this configuration)
+
+**[fallback] Co-Worker ARCC run, 2026-10-30. Reviewer: `team/reviews/2026-10-30_reviewer_j2_tangent_validation.md`,
+Recheck R1: the experiment (a)–(b) is SHIP for this small-strain, constant-H J2 configuration; the student package is
+not yet released (it awaits closed staging and a non-owner test).** Full report: `team/reviews/2026-10-30_arcc_L25_j2_tangent_validation.md`; evidence:
+`team/reviews/2026-10-30_L25_j2_tangent_evidence/arcc/`.
+
+**Setup:**
+- **The model:** Lab 0's quarter plate with a hole (512 QUAD4, plane strain), Lab 4's material (E = 100, ν = 0.3,
+  σ_y = 1, linear hardening H = 5), load S: 0 → 0.8 (t = 1) → 0.4 (t = 1.5).
+- **The solver:** fixed dt = 0.05; NEWTON with a full SMP preconditioner and direct LU; no line search;
+  nl_rel_tol 1e-10, nl_abs_tol 1e-12; one rank.
+- **The build:** sandbox build 24945157, binary `f83e10c9…`.
+- **The material:** `J2TangentDemoStressUpdate` keeps MOOSE's built-in J2 stress update and adds the analytic
+  consistent tangent. It runs with `tangent_operator = nonlinear` (consistent) or `elastic` (ℂ).
+
+**Results (job 24945303):**
+
+| Case | Newton iterations, 30 steps | Per plastic step (t = 0.55–1.0) |
+|---|---:|---|
+| consistent tangent | 64 | 4–5 |
+| elastic tangent (same stress update) | 690 | 36 → 94 |
+| built-in IsotropicPlasticityStressUpdate (ℂ) | 690 | same as elastic |
+
+- **Step 20 (t = 1.0):** the consistent run's |R| goes 7.8e-3, 1.0e-3, 2.0e-4, 1.3e-6, 5.5e-12, 1.4e-15 (5
+  updates): rapid superlinear reduction to the numerical floor, not a measured asymptotic order. The elastic run takes 94
+  updates at a nearly constant ratio (late ratio about 0.82).
+- **Same converged answer:** for every element output field and the nodal displacements, max |elastic − consistent| over
+  all saved times and entities is ≤ 3e-10 times that field's maximum (worst 2.91e-10). This is a field-maximum-scaled
+  difference, not a pointwise bound. The built-in run's CSV is byte-identical to the wrapper's elastic run.
+- **Jacobian check** (job 24945304, then the FD-step sweep, jobs 24947862–65):
+  - **On smooth branches** the consistent tangent's discrepancy is proportional to the FD step: 7.5e-7 to 3.0e-6 at the
+    default 1.49e-8, and 5e-8 to 2e-7 at 1e-9. That is truncation error.
+  - **Three late iterates** (step 16 k1, step 18 k3, step 19 k4) show 2e-4 to 1.6e-3 at the default step, and 1.3–1.4e-7 at
+    1e-9: consistent with perturbations crossing active-set boundaries.
+  - **k = 0 of steps 12–20** shows about 1e-2 independent of the step, consistent with a yield-switch kink. Step 11/k0 is
+    near roundoff (2.9e-12).
+  - **The elastic tangent:** about 1.0e-2 to 2.4e-2 on k ≥ 1 iterates of steps 11–13 (checked to t = 0.65).
+- **dt = 0.025** (job 24945532): 123 vs 1,255 updates.
+  - **Same dt, consistent vs elastic:** an absolute difference of 1.0e-14 in average σ_xx, and 4.95e-12 absolute
+    (2.48e-10 normalized) in max p.
+  - **dt 0.025 vs 0.05,** at common times: 9.4e-4 normalized in max p and 2.8e-6 in average ε_xx. A timestep
+    sensitivity, not a convergence order.
+- **Limits:** iteration counts, not wall time. One mesh, one rank, linear hardening only; the learned-yield classes
+  still use ℂ.
+
+**Algebra check** (local, unchanged): `check_tangent.py`, 120 states, maximum relative directional error 9.02e-9.
