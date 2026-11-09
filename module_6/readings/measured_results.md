@@ -36,7 +36,8 @@ lab closes.
 - **Run-to-run variation:** on the GPU, runs with the same seeds did not give identical results (non-deterministic GPU
   kernels); the values are held with the other Task 2–3 results.
 - **U-Net (stretch), 100-RVE field dataset:** 1,927,907 parameters; 23 s on a GPU (job 25124896). Checkpoint 7.8 MB.
-  Only this 100-RVE run was made; the 500-RVE stretch task was not run end to end.
+  Rerun after the CPU-copy checkpoint change (job 25125078): 24 s, `Device: cuda`; its checkpoint loads on a login node.
+  Only the 100-RVE dataset size was tested (two training runs); the 500-RVE stretch task was not run end to end.
 
 ## §3 · Sweep (`cnn_optuna_sweep.sbatch`, partition `mb`, CPU, ten workers × 3 trials)
 
@@ -54,3 +55,14 @@ lab closes.
   comes first (job 25124868 failed; the same script from a clean shell passed, job 25124870). Lab 2 found the same on
   2026-09-18. The Lab 6 job scripts now `source setup5475.sh` (training, sweep) or call the environment's Python by
   full path (data generation); both pass from a sourced shell (jobs 25124871–25124874).
+
+## §5 · Homogeneous limits of the RVE template (job 25125013, partition `mb`)
+
+- The template run with constant E = 1 and constant E = 5 (ν = 0.3) gave E_app = ⟨σ_xx⟩/0.001 = 1.0989010989 and
+  5.4945054945, with ⟨σ_yy⟩ ≈ 1e-17 and 1e-16: the analytic E/(1 − ν²) for a homogeneous cell under these BCs. Every
+  composite of the two phases lies between them (the argument is in `rve_homogenization.i.template`).
+
+## §6 · Job record
+
+- A sanitized list of every Lab 6 validation job (exit state, elapsed time, partition, device; no scores) is kept with
+  the course team's evidence (`team/reviews/2026-11-05_M6_lab6_evidence/job_manifest.md`).
