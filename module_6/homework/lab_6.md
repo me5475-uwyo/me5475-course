@@ -245,7 +245,9 @@ and why might that be?
 1. **Cost.** How long did Task 1 take? Report elapsed time per worker and in total
    (`sacct -j <jobid> -o JobID,Elapsed,TotalCPU,AllocCPUS`), and say which you are quoting: elapsed (wall) time, the
    CPU time the processes actually used (TotalCPU), or allocated core-time (Elapsed × AllocCPUS). Time the trained
-   CNN predicting 500 E_app values, and say on what (CPU or GPU, batch size). With these numbers, when is a
+   CNN predicting 500 E_app values, and say on what (CPU or GPU, batch size). On a GPU, run one warm-up prediction
+   first and call `torch.cuda.synchronize()` before starting and before stopping the clock; otherwise you time the
+   start-up or an unfinished computation. With these numbers, when is a
    surrogate worth building for this problem, and when would you just run MOOSE?
 2. **The baselines.** From Task 2d and Task 4: how did the CNN compare with the area-fraction line, and what can
    and can't you conclude from that about what it learned?
