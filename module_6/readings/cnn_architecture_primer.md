@@ -79,11 +79,13 @@ add only 2 pixels each, so pooling and strides are what make the receptive field
 
 **Padding.** Adds zero rows/columns to image edges so the kernel can be centered at the edge.
 
-- `padding = 0` (`"valid"`): output smaller than input.
-- `padding = "same"`: output the same size as the input; stride 1 only. For an odd kernel this equals
-  `padding = kernel // 2`.
-- Larger outputs come from transposed convolutions (`nn.ConvTranspose2d`) or upsampling, not from a `Conv2d` padding
-  mode; PyTorch's `Conv2d` accepts `"valid"`, `"same"` or numbers.
+- `padding = 0` (`"valid"`): the output is smaller than the input when the kernel is larger than 1 × 1 or the stride
+  is above 1 (a 1 × 1, stride-1 convolution keeps the size).
+- `padding = "same"`: output the same size as the input; stride 1 only. With dilation 1 and an odd kernel this
+  equals `padding = kernel // 2`.
+- At stride 1 and dilation 1, a numeric padding larger than that enlarges the output (n = 5, k = 3, s = 1, p = 2 gives 7), but PyTorch's `Conv2d`
+  has no `"full"` string mode: it accepts `"valid"`, `"same"` or numbers. Learned upsampling uses transposed
+  convolutions (`nn.ConvTranspose2d`) or interpolation followed by a convolution.
 
 **Stride.** How many pixels the kernel moves per step.
 
