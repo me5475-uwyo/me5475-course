@@ -4,7 +4,7 @@ A two-page reference for L32 and Lab 7.
 
 ---
 
-## Before the FNO: one problem solved twice (L32, slides 4–7)
+## Before the FNO: one problem solved twice (L32, slides 7–10)
 
 The periodic heat equation u_t = ν u_xx on [0, 1), with ν = 0.01 (Burgers without its u u_x term) and
 u(x, 0) = sin 2πx + ½ sin 6πx.
