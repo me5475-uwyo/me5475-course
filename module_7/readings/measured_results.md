@@ -64,5 +64,24 @@ periodic, ν = 0.01, u(x, 0) = sin 2πx + ½ sin 6πx, grid x_j = j/N.
 - Decay factors at t = 1: mode 1 e^(−4π²ν) = 0.6738; mode 3 e^(−36π²ν) = 0.0286. At t = 0.25, mode 3: 0.4114.
 - FFT solution vs the hand solution at t = 1: max |error| 3.9e-16, relative L2 2.5e-16 (N = 64); 3.9e-16 and 2.3e-16
   (N = 256, same amplitudes 1.000 and 0.500). At t = 0.25, N = 64: 6.1e-16 and 2.8e-16.
-- Figures for L32 slides 4 and 6: `--figdir Slides/beamer/figs` writes `l32_heat_waves.pdf`, `l32_heat_solution.pdf`
+- Figures for L32 slides 7 and 9 (slides 4 and 6 before the Nov 16 FFT slides): `--figdir Slides/beamer/figs` writes `l32_heat_waves.pdf`, `l32_heat_solution.pdf`
   (and `l32_heat_spectrum.pdf`, not used in the deck).
+
+## §4 · FFT basics examples (Nov 16, 2026; NumPy, not a trained model)
+
+`python module_7/examples/fft_basics_examples.py` (all five examples; `--example N` runs one). Local demo environment
+`~/ME5475-demo-env` (Python 3.9.6, NumPy 2.0.2), laptop, Nov 16, 2026; deterministic (noise from
+`default_rng(0)`). Run time 0.07 s without figures, 0.9 s with `--figdir` (five PDFs, written to a scratch folder,
+not the repo). NumPy default normalization, grid x_j = j/N. Cited by `module_7/readings/fft_primer.md`.
+
+- **Example 1** (u = 2 sin 2πx + 0.5 cos 10πx, N = 64): `rfft` returns 33 coefficients, nonzero at k = 1 and 5.
+  k = 1: û = −64i, amplitude 2|û|/N = 2.0000, angle −90° (sine). k = 5: û = 16, amplitude 0.5000, angle 0° (cosine).
+- **Example 2** (m = 1 kg, k = 400 N/m, ζ = 0.02; fs = 100 Hz, T = 20 s): ω_n = 20.0 rad/s, f_n = 3.1831 Hz, exact
+  f_d = 3.1825 Hz; N = 2000 samples, 1001 bins, Nyquist 50 Hz; bin spacing 1/T = 0.050 Hz; largest bin (mean removed)
+  3.200 Hz (bin 64), peak − f_d = +0.0175 Hz (this run: within half a bin, 0.025 Hz; bin spacing is not an error bound); envelope factor at t = T: 3.4e-04.
+- **Example 3** (sin 2πx + 0.3 sin 6πx + noise σ = 0.05, seed 0, N = 256; keep k = 0..10, 11 of 129 bins): RMS
+  error vs the clean signal 0.0506 before, 0.0155 after.
+- **Example 4** (u = sin 2πx + 0.5 sin 6πx, N = 32; max |u′| = 15.71): max |error| vs exact u′: spectral (iκ_k,
+  Nyquist zeroed) 4.6e-14; periodic central difference 0.576.
+- **Example 5** (periodic 5-point moving average of the Example-3 signal, N = 256): max |direct − via FFT| = 6.7e-16.
+  Operation counts printed for a kernel as long as the signal: N² = 65536; N log₂ N = 2048 per transform.
