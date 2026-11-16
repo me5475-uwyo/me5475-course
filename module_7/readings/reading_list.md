@@ -24,6 +24,12 @@ The original universal-approximation theorem for operators (an existence result)
 
 FNO paper. Read Sections 1–4 (Section 4 defines the Fourier layer). Free version: arXiv 2010.08895.
 
+### [Primary] `module_7/readings/fft_primer.md`
+
+FFT fundamentals for L32: what the transform computes, `fft` vs `rfft`, reading amplitude and phase, sampling and
+aliasing, and five short examples on familiar problems (a vibration record's natural frequency, smoothing noisy data,
+a derivative, a moving average). Companion script: `module_7/examples/fft_basics_examples.py` (runs in about a second).
+
 ### [Primary] `module_7/readings/fno_primer.md`
 
 Companion reference; released with Lab 7, Mon Nov 16.
