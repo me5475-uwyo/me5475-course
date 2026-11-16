@@ -48,6 +48,7 @@ module_7/
 │   ├── deeponet_burgers.py                       DeepONet on 1-D Burgers
 │   ├── fno_burgers.py                            FNO on 1-D Burgers
 │   ├── heat_fourier_example.py                   L32: heat equation by hand and by FFT (NumPy only)
+│   ├── fft_basics_examples.py                    L32: five FFT examples (fft_primer.md; NumPy only)
 │   ├── fno_microstructure.py                     stretch: FNO on M6 dataset
 │   ├── burgers_data.sbatch                       ARCC SLURM: Burgers data at any N
 │   ├── deeponet_demo.sbatch                      ARCC SLURM: the L31 demo (data + DeepONet)
@@ -58,6 +59,7 @@ module_7/
 └── readings/
     ├── reading_list.md
     ├── deeponet_primer.md                        branch/trunk architecture explained
+    ├── fft_primer.md                             FFT fundamentals, five worked examples (L32)
     ├── fno_primer.md                             Fourier neural operator explained
     └── measured_results.md                       source of every number quoted in M7
 ```
