@@ -55,10 +55,13 @@ def solve_burgers_spectral(u0, nu, T, dt, N):
     """Solve 1-D periodic Burgers' equation with 4th-order RK time stepping."""
     k = np.fft.fftfreq(N, d=1.0 / N) * 2 * np.pi
     k_sq = k * k
-    # Aliasing filter, 2/3 rule: keep |k| < N/3 and zero the top third of the modes.
-    # fftfreq order puts the highest |k| in the middle of the array, so the middle is
-    # zeroed directly. (Do not fftshift this mask: that would zero the LOW modes and
-    # delete the nonlinear term, leaving the heat equation.)
+    # A simplified aliasing filter: zero the top third of the modes of u_x (the product u * u_x
+    # itself is not filtered, so this is not full 2/3-rule dealiasing). fftfreq order puts the
+    # highest |k| in the middle of the array, so the middle is zeroed directly. (Do not fftshift
+    # this mask: that would zero the LOW modes and delete the nonlinear term, leaving the heat
+    # equation.) Validated for the course's smooth GRF inputs, nu = 0.01, T = 1 and N = 64-512
+    # against Cole-Hopf and finer-grid references (module_7/readings/measured_results.md); it is
+    # not a certificate for rough inputs, other viscosities or other grids.
     cutoff = N // 3
     dealias = np.ones(N)
     dealias[cutoff : N - cutoff] = 0
@@ -74,8 +77,16 @@ def solve_burgers_spectral(u0, nu, T, dt, N):
         uxx = np.fft.ifft(uxx_hat).real
         return -u * ux + nu * uxx
 
+    # Explicit RK4 is stable for the diffusion term only while nu * k_max^2 * dt stays below ~2.8,
+    # with k_max = pi * N. The default dt = 1e-3 gives about 1.6 at N = 128 and is kept unchanged
+    # there; on finer grids (N = 256, 512, ...) dt is reduced so the number stays near 1.6.
+    # Without this, every sample diverges at N >= 256 (checked Nov 13, 2026).
+    stab = nu * (np.pi * N) ** 2 * dt
+    if stab > 2.0:
+        dt = dt * 1.6 / stab
     u = u0.copy()
-    n_steps = int(np.round(T / dt))
+    n_steps = int(np.ceil(T / dt - 1e-9))
+    dt = T / n_steps
     for _ in range(n_steps):
         # RK4
         k1 = dt * rhs(u)
