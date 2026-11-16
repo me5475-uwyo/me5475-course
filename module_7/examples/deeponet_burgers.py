@@ -146,7 +146,9 @@ def main():
 
     # Save
     args.out.parent.mkdir(parents=True, exist_ok=True)
-    torch.save({"model_state": model.state_dict(), "args": vars(args), "rel_l2": float(rel_l2)}, args.out)
+    # plain types only (paths as strings), so torch.load works with its default weights_only=True
+    saved_args = {k: (str(v) if isinstance(v, Path) else v) for k, v in vars(args).items()}
+    torch.save({"model_state": model.state_dict(), "args": saved_args, "rel_l2": float(rel_l2)}, args.out)
 
     # Visualize
     fig, axes = plt.subplots(2, 2, figsize=(11, 7))
