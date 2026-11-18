@@ -42,6 +42,26 @@ not an exact count). Here we use NumPy's FFT routines.
 | `np.fft.irfft(u_hat, n=N)` | back to N real samples (pass `n`, or an odd N is lost) |
 | `np.fft.fftfreq(N, d)`, `np.fft.rfftfreq(N, d)` | the frequency of each bin, with sample spacing d |
 
+**Why `rfft` returns N//2 + 1 numbers.** The "r" stands for *real*. Count what goes in and what comes out, using the
+L32 slide-5 example (N = 8 samples of cos 2πx; values in `measured_results.md` §4):
+
+- **In:** 8 real numbers. **`fft` out:** 8 complex numbers, that is, 16 real numbers. Sixteen independent numbers
+  cannot come from eight, so half of `fft`'s output repeats the other half: for real u, û_{N−k} is the complex
+  conjugate of û_k (because e^{−2πij} = 1 and every u_j is real). `fft` gives `[0, 4, 0, 0, 0, 0, 0, 4]`; entry 7
+  is the conjugate of entry 1 (here both are the real number 4).
+- **`rfft` out:** only the part that is not repeated, `[0, 4, 0, 0, 0]`. That is the same eight independent real degrees of freedom:
+
+| k | what it is | real numbers it carries |
+|---|---|---|
+| 0 | the DC coefficient, N times the mean (always real for real u) | 1 |
+| 1, 2, 3 | the waves with 1, 2, 3 oscillations (complex: size and shift) | 3 × 2 = 6 |
+| 4 = N/2 | the fastest wave the grid can hold, +1, −1, +1, … (always real) | 1 |
+| | **total** | **8** |
+
+For odd N = 9 the count is 1 (k = 0) + 4 × 2 (k = 1, …, 4) = 9, with no Nyquist entry. `rfft` again returns 5
+numbers, which is why `irfft` needs `n=N` to tell 8 samples from 9. In short: **`rfft` lists each wave in a real
+signal once, from the mean up to the fastest wave the grid can hold; `fft` also lists their mirror images, which carry no new information.**
+
 - **Normalization.** NumPy's default: the forward transform is unscaled, the inverse divides by N. Other libraries
   (and some textbooks) put 1/N or 1/√N elsewhere; check before you compare numbers.
 - **Mode index from `rfftfreq`.** With `d = 1/N` it returns the integer modes 0, 1, …, N/2; with `d = 1/fs` (a time
