@@ -88,13 +88,14 @@ def make_figures(figdir, nu):
     fig.tight_layout(pad=0.3)
     fig.savefig(figdir / "l32_heat_spectrum.pdf", metadata={"CreationDate": None}); plt.close(fig)
 
-    # 3. hand solution (lines) vs FFT solution (dots) at three times
+    # 3. hand solution (lines) vs FFT solution (open circles, every 4th sample) at three times
     fig, ax = plt.subplots(figsize=(3.2, 1.75), dpi=200)
     for t, c, ls in [(0.0, GOLD, "--"), (0.25, GRAY, "-."), (1.0, BROWN, "-")]:
         ax.plot(xf, exact_solution(xf, nu, t), ls, color=c, lw=1.4, label=f"$t = {t:g}$")
-        ax.plot(x[::2], fft_solution(initial_condition(x), nu, t)[::2], "o", ms=2.0, color=c, mew=0)
+        ax.plot(x[::4], fft_solution(initial_condition(x), nu, t)[::4], "o", ms=3.4, mfc="white", mec=c, mew=0.9,
+                zorder=3)
     ax.set_xlabel("$x$"); ax.set_xlim(0, 1); ax.axhline(0, color=GRAY, lw=0.4)
-    ax.legend(frameon=False, fontsize=6, loc="lower left", title="lines: by hand   dots: FFT", title_fontsize=6)
+    ax.legend(frameon=False, fontsize=6, loc="lower left", title="lines: slide-8 formula\ncircles: FFT", title_fontsize=6)
     fig.tight_layout(pad=0.3)
     fig.savefig(figdir / "l32_heat_solution.pdf", metadata={"CreationDate": None}); plt.close(fig)
     print(f"Saved 3 figures to {figdir}")
