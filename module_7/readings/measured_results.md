@@ -85,3 +85,13 @@ not the repo). NumPy default normalization, grid x_j = j/N. Cited by `module_7/r
   Nyquist zeroed) 4.6e-14; periodic central difference 0.576.
 - **Example 5** (periodic 5-point moving average of the Example-3 signal, N = 256): max |direct − via FFT| = 6.7e-16.
   Operation counts printed for a kernel as long as the signal: N² = 65536; N log₂ N = 2048 per transform.
+- **L32 slide-5 example** (u = cos 2πx, N = 8; same environment, Nov 18, 2026; values rounded to 10 decimals; raw
+  roundoff up to 6.5e-16 for cos 2πx at N = 8, up to 2.9e-15 for the other calls below): `fft` = [0, 4, 0, 0, 0, 0, 0, 4]; `rfft` = [0, 4, 0, 0, 0], equal to `fft[:5]`; `fft[7]` equals
+  the conjugate of `fft[1]`; `irfft(rfft(u), n=8)` returns u, max error 1.1e-16. `rfft(3 cos 4πx)` = [0, 0, 12, 0, 0];
+  `rfft(sin 2πx)` = [0, −4i, 0, 0, 0]. N = 9 (u = cos 2πx): `rfft` returns 5 numbers ([0, 4.5, 0, 0, 0]); `irfft`
+  without `n` returns 8 samples, with `n=9` returns u (max error 1.1e-16). `rfft` of a complex input raises a
+  `TypeError` in NumPy 2.0.2. **Counts** (checked on random real signals, `default_rng(0)`): `fft` of N = 8 real
+  samples returns 8 complex slots, i.e. 16 real scalar slots; `rfft` keeps 5 bins, and the imaginary parts of bin 0
+  and bin 4 are exactly 0, so the independent real count is 1 + 3×2 + 1 = 8. For N = 9, `rfft` keeps 5 bins with only
+  bin 0 real (the last bin's imaginary part is nonzero): 1 + 4×2 = 9. Bin 0 is the sum of the samples (eight ones give
+  8; divided by N, the mean 1).
